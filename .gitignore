@@ -47,3 +47,44 @@ prisma/*.db
 .DS_Store
 Thumbs.db
 *.bak
+
+
+# Documentation language variants (ignore all localized README, CHANGELOG, SECURITY except primary: default, RU, EN)
+[Rr][Ee][Aa][Dd][Mm][Ee].*.md
+[Rr][Ee][Aa][Dd][Mm][Ee]_*.md
+[Rr][Ee][Aa][Dd][Mm][Ee]-*.md
+[Cc][Hh][Aa][Nn][Gg][Ee][Ll][Oo][Gg].*.md
+[Cc][Hh][Aa][Nn][Gg][Ee][Ll][Oo][Gg]_*.md
+[Cc][Hh][Aa][Nn][Gg][Ee][Ll][Oo][Gg]-*.md
+[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy].*.md
+[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy]_*.md
+[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy]-*.md
+
+# Ignore subsidiary subfolder README / CHANGELOG / SECURITY files
+/**/[Rr][Ee][Aa][Dd][Mm][Ee].md
+/**/[Cc][Hh][Aa][Nn][Gg][Ee][Ll][Oo][Gg].md
+/**/[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy].md
+
+# Whitelist primary official documentation (Root default, RU, EN)
+!/[Rr][Ee][Aa][Dd][Mm][Ee].md
+!/[Rr][Ee][Aa][Dd][Mm][Ee].ru.md
+!/[Rr][Ee][Aa][Dd][Mm][Ee].en.md
+!/[Rr][Ee][Aa][Dd][Mm][Ee]-ru.md
+!/[Rr][Ee][Aa][Dd][Mm][Ee]-en.md
+!/[Rr][Ee][Aa][Dd][Mm][Ee]_ru.md
+!/[Rr][Ee][Aa][Dd][Mm][Ee]_en.md
+!/[Cc][Hh][Aa][Nn][Gg][Ee][Ll][Oo][Gg].md
+!/[Cc][Hh][Aa][Nn][Gg][Ee][Ll][Oo][Gg].ru.md
+!/[Cc][Hh][Aa][Nn][Gg][Ee][Ll][Oo][Gg].en.md
+!/[Cc][Hh][Aa][Nn][Gg][Ee][Ll][Oo][Gg]-ru.md
+!/[Cc][Hh][Aa][Nn][Gg][Ee][Ll][Oo][Gg]-en.md
+!/[Cc][Hh][Aa][Nn][Gg][Ee][Ll][Oo][Gg]_ru.md
+!/[Cc][Hh][Aa][Nn][Gg][Ee][Ll][Oo][Gg]_en.md
+!/[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy].md
+!/[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy].ru.md
+!/[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy].en.md
+!/[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy]-ru.md
+!/[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy]-en.md
+!/[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy]_ru.md
+!/[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy]_en.md
+!docs/SECURITY_REPORT.md
