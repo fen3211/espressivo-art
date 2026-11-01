@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  test-and-build:
+    name: Lint, Test, Typecheck & Build
+    runs-on: ubuntu-latest
+
+    env:
+      NODE_ENV: test
+      DATABASE_URL: "file:./prisma/ci.db"
+      JWT_SECRET: "ci-test-jwt-secret-minimum-32-characters-espressivo-art"
+      MOCK_PAYMENT_SECRET: "ci-test-mock-payment-secret-minimum-32-characters"
+      ENABLE_MOCK_CHECKOUT: "true"
+      ENABLE_DEMO_ACCOUNTS: "true"
+      ALLOW_PROD_SEED: "true"
+      NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies via package-lock
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npm run prisma:generate
+
+      - name: Validate Prisma Schema
+        run: npx prisma validate
+
+      - name: Push Prisma SQLite Schema
+        run: npx prisma db push --skip-generate
+
+      - name: Seed Test Database
+        run: node prisma/seed.js
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Strict TypeScript Check
+        run: npx tsc --noEmit
+
+      - name: Run Vitest Test Suite
+        run: npm test
+
+      - name: Next.js Production Build
+        run: npm run build
