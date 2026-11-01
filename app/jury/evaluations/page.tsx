@@ -1,0 +1,132 @@
+'use client';
+
+import React from 'react';
+import Link from 'next/link';
+import { Card } from '@/components/ui/Card';
+import { Table, Column } from '@/components/ui/Table';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Eye, Award } from 'lucide-react';
+
+interface EvaluatedRow extends Record<string, unknown> {
+  id: string;
+  code: string;
+  repertoire: string;
+  nomination: string;
+  scores: string;
+  totalScore: number;
+  award: string;
+  submittedAt: string;
+}
+
+export default function JuryEvaluationsArchivePage() {
+  const evaluations: EvaluatedRow[] = [
+    {
+      id: 'app-002',
+      code: 'EXP-2026-0089',
+      repertoire: 'И. Крутой — "Любовь, похожая на сон"',
+      nomination: 'Эстрадный вокал (Соло)',
+      scores: '24 / 25 / 24 / 23',
+      totalScore: 96,
+      award: 'Лауреат I степени',
+      submittedAt: '02.05.2026 16:40',
+    },
+    {
+      id: 'app-010',
+      code: 'EXP-2026-0012',
+      repertoire: 'В.А. Моцарт — Ария Царицы ночи',
+      nomination: 'Академический вокал (Соло)',
+      scores: '25 / 25 / 25 / 25',
+      totalScore: 100,
+      award: 'Гран-при',
+      submittedAt: '29.04.2026 19:15',
+    },
+    {
+      id: 'app-011',
+      code: 'EXP-2026-0033',
+      repertoire: 'Дж. Гершвин — "The Man I Love"',
+      nomination: 'Джазовый вокал',
+      scores: '22 / 24 / 23 / 22',
+      totalScore: 91,
+      award: 'Лауреат II степени',
+      submittedAt: '25.04.2026 11:05',
+    },
+  ];
+
+  const columns: Column<EvaluatedRow>[] = [
+    {
+      key: 'code',
+      header: 'Шифр заявки',
+      render: (r) => <span className="font-mono text-xs text-[#6199f6]">{r.code}</span>,
+    },
+    {
+      key: 'repertoire',
+      header: 'Произведение и номинация',
+      render: (r) => (
+        <div>
+          <div className="font-medium text-[#fcfcfc] text-sm">{r.repertoire}</div>
+          <div className="text-xs text-[#757580]">{r.nomination}</div>
+        </div>
+      ),
+    },
+    {
+      key: 'scores',
+      header: 'Критерии (Т/М/А/Р)',
+      render: (r) => <span className="font-mono text-xs text-[#a3a3b3]">{r.scores}</span>,
+    },
+    {
+      key: 'totalScore',
+      header: 'Итог',
+      render: (r) => (
+        <span className="font-mono text-sm font-bold text-[#6199f6]">
+          {r.totalScore} / 100
+        </span>
+      ),
+    },
+    {
+      key: 'award',
+      header: 'Степень',
+      render: (r) => (
+        <Badge
+          status={r.totalScore === 100 ? 'GRAND_PRIX' : 'LAUREATE_1'}
+          label={r.award}
+        />
+      ),
+    },
+    {
+      key: 'submittedAt',
+      header: 'Дата подписания',
+      render: (r) => <span className="text-xs text-[#757580]">{r.submittedAt}</span>,
+    },
+    {
+      key: 'actions',
+      header: 'Действия',
+      align: 'right',
+      render: (r) => (
+        <Link href={`/jury/applications/${r.id}`}>
+          <Button variant="ghost" size="sm" iconLeft={<Eye className="w-3.5 h-3.5" />}>
+            Просмотр
+          </Button>
+        </Link>
+      ),
+    },
+  ];
+
+  return (
+    <div className="space-y-6 font-sans">
+      <div className="border-b border-[#2a2a32] pb-6">
+        <div className="text-[11px] font-mono uppercase tracking-wider text-[#6199f6] mb-1">
+          ARCHIVE // SIGNED EVALUATIONS
+        </div>
+        <h1 className="text-2xl sm:text-3xl font-medium text-[#fcfcfc]">
+          Архив подписанных судейских протоколов
+        </h1>
+        <p className="text-xs sm:text-sm text-[#a3a3b3] mt-1">
+          Официальные протоколы, заверенные вашей цифровой подписью жюри
+        </p>
+      </div>
+
+      <Table columns={columns} data={evaluations} />
+    </div>
+  );
+}

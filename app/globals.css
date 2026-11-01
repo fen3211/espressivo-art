@@ -1,0 +1,160 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-serif: 'Cormorant Garamond', 'Adobe Garamond Pro', 'EB Garamond', Garamond, Georgia, serif;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-mono: 'Space Mono', 'JetBrains Mono', monospace;
+  }
+}
+
+/* ==========================================================================
+   THEME 1: PUBLIC REALM — ART+COMMERCE (Quiet Editorial Gallery)
+   Bone #e7e7e7, Ink #000000, Charcoal #121212
+   Strict 0px radius, no shadows, no gradients, hairline borders.
+   ========================================================================== */
+.theme-art,
+[data-theme="art"] {
+  --color-canvas: #e7e7e7;
+  --color-ink: #000000;
+  --color-charcoal: #121212;
+  --color-border: #000000;
+  --color-border-subtle: rgba(0, 0, 0, 0.15);
+  --color-surface-hover: #dedede;
+  --color-surface-card: #e7e7e7;
+  --radius-base: 0px;
+  --radius-card: 0px;
+  --radius-pill: 0px;
+  --shadow-card: none;
+  --shadow-halo: none;
+
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-serif);
+}
+
+.theme-art * {
+  border-radius: 0px !important;
+  box-shadow: none !important;
+}
+
+/* Art typography helpers */
+.font-art-display {
+  font-family: var(--font-serif);
+  letter-spacing: -0.018em;
+  font-weight: 400;
+}
+
+.font-art-body {
+  font-family: var(--font-serif);
+  line-height: 1.35;
+  font-weight: 400;
+}
+
+.font-art-label {
+  font-family: var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.038em;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.font-art-nav {
+  font-family: var(--font-sans);
+  text-transform: uppercase;
+  letter-spacing: 0.033em;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+/* ==========================================================================
+   THEME 2: WORKSPACE REALM — FRAME.IO MIDNIGHT CINEMA
+   Obsidian #0a0a13, Void #040407, Graphite #08080c, Carbon Vellum #fcfcfc,
+   Iris Glow #6199f6, Twilight #4f4f80.
+   10px cards, 100px pills, violet halos, atmospheric gradients.
+   ========================================================================== */
+.theme-cinema,
+[data-theme="cinema"] {
+  --color-canvas: #0a0a13;
+  --color-void: #040407;
+  --color-graphite: #08080c;
+  --color-elevated: #181826;
+  --color-vellum: #fcfcfc;
+  --color-ash: #a3a3b3;
+  --color-smoke: #757580;
+  --color-border-subtle: #2a2a32;
+  --color-border-glow: #4f4f80;
+  --color-iris: #6199f6;
+  --color-iris-subtle: rgba(97, 153, 246, 0.12);
+  --color-specter: #dedfee;
+
+  --color-status-success: #22c55e;
+  --color-status-warning: #eab308;
+  --color-status-error: #ef4444;
+  --color-status-info: #6199f6;
+
+  --radius-card: 10px;
+  --radius-pill: 100px;
+  --radius-lg: 24px;
+
+  --shadow-card: inset 0 0 0 1px #4f4f80, 0 12px 32px rgba(0, 0, 0, 0.45);
+  --shadow-glow: 0 0 24px rgba(97, 153, 246, 0.25);
+  --shadow-video: 0 24px 64px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(79, 79, 128, 0.3);
+
+  background-color: var(--color-canvas);
+  background-image: radial-gradient(circle at 50% 0%, rgba(79, 79, 128, 0.15) 0%, rgba(10, 10, 19, 0) 70%);
+  color: var(--color-vellum);
+  font-family: var(--font-sans);
+}
+
+/* Cinema typography helpers */
+.font-cinema-display {
+  font-family: var(--font-sans);
+  letter-spacing: -0.04em;
+  font-weight: 500;
+}
+
+.font-cinema-stamp {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.font-cinema-mono {
+  font-family: var(--font-mono);
+}
+
+/* Focus indicators */
+.theme-art :focus-visible {
+  outline: 2px solid #000000;
+  outline-offset: 3px;
+}
+
+.theme-cinema :focus-visible {
+  outline: 2px solid #6199f6;
+  outline-offset: 2px;
+  box-shadow: 0 0 12px rgba(97, 153, 246, 0.35);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.theme-art ::-webkit-scrollbar-track {
+  background: #e7e7e7;
+}
+.theme-art ::-webkit-scrollbar-thumb {
+  background: #000000;
+}
+
+.theme-cinema ::-webkit-scrollbar-track {
+  background: #040407;
+}
+.theme-cinema ::-webkit-scrollbar-thumb {
+  background: #4f4f80;
+  border-radius: 100px;
+}

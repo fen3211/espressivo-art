@@ -1,0 +1,260 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  passwordHash String
+  role         String        @default("PARTICIPANT") // PARTICIPANT, TEACHER, JURY, ADMIN
+  fullName     String
+  phone        String?
+  avatarUrl    String?
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  // Relationships
+  teacherProfile       TeacherProfile?
+  applications         Application[]          @relation("UserApplications")
+  evaluations          Evaluation[]           @relation("JuryEvaluations")
+  paymentTransactions  PaymentTransaction[]
+  notifications        Notification[]
+  auditLogs            AuditLog[]
+}
+
+model TeacherProfile {
+  id             String              @id @default(cuid())
+  userId         String              @unique
+  user           User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  referralCode   String              @unique
+  commissionRate Float               @default(0.20)
+  balance        Float               @default(0.0)
+  organization   String?
+  bankDetails    String?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  referredApps   Application[]       @relation("ReferredTeacherApps")
+  ledgerEntries  LedgerTransaction[]
+  payoutRequests PayoutRequest[]
+}
+
+model Competition {
+  id             String        @id @default(cuid())
+  slug           String        @unique
+  titleRu        String
+  titleEn        String
+  descriptionRu  String
+  descriptionEn  String
+  heroImageUrl   String?
+  status         String        @default("OPEN") // DRAFT, UPCOMING, OPEN, JUDGING, COMPLETED
+  entryFee       Float         @default(2500.0)
+  currency       String        @default("RUB")
+  startDate      DateTime
+  endDate        DateTime
+  judgingEndDate DateTime
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  nominations    Nomination[]
+  ageCategories  AgeCategory[]
+  applications   Application[]
+}
+
+model Nomination {
+  id            String        @id @default(cuid())
+  competitionId String
+  competition   Competition   @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  code          String
+  titleRu       String
+  titleEn       String
+  descriptionRu String?
+  descriptionEn String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  applications  Application[]
+}
+
+model AgeCategory {
+  id            String        @id @default(cuid())
+  competitionId String
+  competition   Competition   @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  code          String
+  titleRu       String
+  titleEn       String
+  minAge        Int
+  maxAge        Int
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  applications  Application[]
+}
+
+model Application {
+  id                  String              @id @default(cuid())
+  code                String              @unique // e.g. EXP-2026-0042
+  userId              String
+  user                User                @relation("UserApplications", fields: [userId], references: [id], onDelete: Cascade)
+  competitionId       String
+  competition         Competition         @relation(fields: [competitionId], references: [id])
+  nominationId        String
+  nomination          Nomination          @relation(fields: [nominationId], references: [id])
+  ageCategoryId       String
+  ageCategory         AgeCategory         @relation(fields: [ageCategoryId], references: [id])
+  
+  // Participant Data
+  participantName     String
+  birthDate           DateTime
+  teacherName         String?
+  institution         String?
+  repertoire          String
+  performanceDuration Int?                // seconds
+  
+  // Protected Video Materials
+  videoUrl            String
+  videoProvider       String              @default("YOUTUBE") // YOUTUBE, RUTUBE, VK, CLOUD
+  
+  // Compliance & Consents
+  parentFullName      String
+  parentEmail         String
+  parentPhone         String
+  consentDataProcess  Boolean             @default(false)
+  consentPublicStream Boolean             @default(false)
+  
+  // State Machines
+  status              String              @default("DRAFT") // DRAFT, SUBMITTED, PAYMENT_PENDING, PAID, UNDER_REVIEW, EVALUATED, COMPLETED, REJECTED
+  paymentStatus       String              @default("UNPAID") // UNPAID, PENDING, PAID, REFUNDED
+  
+  // Teacher Referral Link
+  referralTeacherId   String?
+  referralTeacher     TeacherProfile?     @relation("ReferredTeacherApps", fields: [referralTeacherId], references: [id])
+  
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  evaluations         Evaluation[]
+  certificate         Certificate?
+  transactions        PaymentTransaction[]
+  ledgerEntries       LedgerTransaction[]
+}
+
+model Evaluation {
+  id                 String       @id @default(cuid())
+  applicationId      String
+  application        Application  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  juryUserId         String
+  juryUser           User         @relation("JuryEvaluations", fields: [juryUserId], references: [id])
+  
+  // 4 Criteria x 25 points = 100 max
+  scoreTechnique     Int          @default(0) // 0-25
+  scoreMusicality    Int          @default(0) // 0-25
+  scoreArtistry      Int          @default(0) // 0-25
+  scoreRepertoire    Int          @default(0) // 0-25
+  totalScore         Int          @default(0) // 0-100
+  
+  comment            String?
+  isDraft            Boolean      @default(true)
+  submittedAt        DateTime?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  @@unique([applicationId, juryUserId])
+}
+
+model Certificate {
+  id                 String       @id @default(cuid())
+  certificateNumber  String       @unique // e.g. ESP-VOC-2026-0042-L1
+  applicationId      String       @unique
+  application        Application  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  
+  participantName    String
+  competitionTitle   String
+  nominationTitle    String
+  awardDegree        String       // GRAND_PRIX, LAUREATE_1, LAUREATE_2, LAUREATE_3, DIPLOMANT, PARTICIPANT
+  totalScore         Float
+  issuedDate         DateTime     @default(now())
+  qrCodeToken        String       @unique
+  pdfPath            String?
+  createdAt          DateTime     @default(now())
+}
+
+model PaymentTransaction {
+  id                 String              @id @default(cuid())
+  transactionId      String              @unique // External/Generated gateway transaction ID
+  applicationId      String
+  application        Application         @relation(fields: [applicationId], references: [id])
+  userId             String
+  user               User                @relation(fields: [userId], references: [id])
+  
+  amount             Float
+  currency           String              @default("RUB")
+  status             String              @default("PENDING") // PENDING, CONFIRMED, FAILED, REFUNDED
+  provider           String              @default("MOCK")    // MOCK, YUKASSA, CLOUDPAYMENTS
+  rawPayload         String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  ledgerEntries      LedgerTransaction[]
+}
+
+model LedgerTransaction {
+  id                   String              @id @default(cuid())
+  teacherId            String
+  teacher              TeacherProfile      @relation(fields: [teacherId], references: [id])
+  applicationId        String?
+  application          Application?        @relation(fields: [applicationId], references: [id])
+  paymentTransactionId String?
+  paymentTransaction   PaymentTransaction? @relation(fields: [paymentTransactionId], references: [id])
+  
+  type                 String              // COMMISSION_ACCRUAL, PAYOUT, REFUND_REVERSAL
+  amount               Float
+  status               String              @default("CONFIRMED") // PENDING, CONFIRMED, CANCELLED
+  description          String
+  createdAt            DateTime            @default(now())
+}
+
+model PayoutRequest {
+  id             String         @id @default(cuid())
+  teacherId      String
+  teacher        TeacherProfile @relation(fields: [teacherId], references: [id])
+  amount         Float
+  status         String         @default("REQUESTED") // REQUESTED, PROCESSING, COMPLETED, REJECTED
+  bankDetails    String
+  adminNotes     String?
+  processedAt    DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  action     String   // e.g. "APPLICATION_SUBMITTED", "EVALUATION_FINALIZED", "PAYMENT_CONFIRMED"
+  entityType String   // "Application", "Evaluation", "PaymentTransaction", etc.
+  entityId   String?
+  details    String?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  titleRu   String
+  titleEn   String
+  messageRu String
+  messageEn String
+  type      String   @default("INFO") // INFO, SUCCESS, WARNING, ACTION_REQUIRED
+  isRead    Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+}
