@@ -28,7 +28,7 @@ jobs:
     # Baseline environment: strictly sanitized secrets and database config
     env:
       NODE_ENV: test
-      DATABASE_URL: "file:./prisma/ci.db"
+      DATABASE_URL: "file:./prisma/ci.db?connection_limit=1"
       JWT_SECRET: "ci-test-jwt-secret-minimum-32-characters-espressivo-art"
       MOCK_PAYMENT_SECRET: "ci-test-mock-payment-secret-minimum-32-characters"
       NEXT_PUBLIC_APP_URL: "http://localhost:3000"

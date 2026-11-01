@@ -367,92 +367,114 @@ export class MockPaymentGateway implements PaymentGatewayInterface {
     if (status === "CONFIRMED") {
       let isWinner = false;
 
-      await prisma.$transaction(async (tx) => {
-        // Atomic CAS: Only update if status is NOT CONFIRMED
-        const casResult = await tx.paymentTransaction.updateMany({
-          where: {
-            id: existingTx.id,
-            status: { not: "CONFIRMED" },
-          },
-          data: {
-            status: "CONFIRMED",
-            updatedAt: new Date(),
-          },
-        });
-
-        // If count === 0, another concurrent execution won the race
-        if (casResult.count === 0) {
-          isWinner = false;
-          return;
-        }
-
-        isWinner = true;
-
-        // Mark application as PAID
-        await tx.application.update({
-          where: { id: existingTx.applicationId },
-          data: {
-            paymentStatus: "PAID",
-            status: "PAID",
-            updatedAt: new Date(),
-          },
-        });
-
-        // Check if commission for this application was already accrued (anti-double-accrual guard)
-        const existingCommission = await tx.ledgerTransaction.findFirst({
-          where: {
-            applicationId: existingTx.applicationId,
-            type: "COMMISSION_ACCRUAL",
-            status: "CONFIRMED",
-          },
-        });
-
-        // Accrue 20% commission to referred teacher if present and not already accrued
-        const teacherProfile = existingTx.application.referralTeacher;
-        if (teacherProfile && !existingCommission) {
-          const commissionRate = teacherProfile.commissionRate || 0.20;
-          const commissionAmount = Math.round(existingTx.amount * commissionRate * 100) / 100;
-
-          // Record ledger transaction entry
-          await tx.ledgerTransaction.create({
-            data: {
-              teacherId: teacherProfile.id,
-              applicationId: existingTx.applicationId,
-              paymentTransactionId: existingTx.id,
-              type: "COMMISSION_ACCRUAL",
-              amount: commissionAmount,
-              status: "CONFIRMED",
-              description: `20% referral commission for application ${existingTx.application.code}`,
-            },
-          });
-
-          // Increment teacher balance atomically
-          await tx.teacherProfile.update({
-            where: { id: teacherProfile.id },
-            data: {
-              balance: {
-                increment: commissionAmount,
+      try {
+        await prisma.$transaction(
+          async (tx) => {
+            // Atomic CAS: Only update if status is NOT CONFIRMED
+            const casResult = await tx.paymentTransaction.updateMany({
+              where: {
+                id: existingTx.id,
+                status: { not: "CONFIRMED" },
               },
-            },
-          });
-        }
+              data: {
+                status: "CONFIRMED",
+                updatedAt: new Date(),
+              },
+            });
 
-        // Add audit log
-        await tx.auditLog.create({
-          data: {
-            userId: existingTx.userId,
-            action: "PAYMENT_CONFIRMED",
-            entityType: "Application",
-            entityId: existingTx.applicationId,
-            details: JSON.stringify({
-              transactionId: payload.transactionId,
-              amount: existingTx.amount,
-              currency: expectedCurrency,
-              teacherCommissionAccrued: Boolean(teacherProfile && !existingCommission),
-            }),
+            // If count === 0, another concurrent execution won the race
+            if (casResult.count === 0) {
+              isWinner = false;
+              return;
+            }
+
+            isWinner = true;
+
+            // Mark application as PAID
+            await tx.application.update({
+              where: { id: existingTx.applicationId },
+              data: {
+                paymentStatus: "PAID",
+                status: "PAID",
+                updatedAt: new Date(),
+              },
+            });
+
+            // Check if commission for this application was already accrued (anti-double-accrual guard)
+            const existingCommission = await tx.ledgerTransaction.findFirst({
+              where: {
+                applicationId: existingTx.applicationId,
+                type: "COMMISSION_ACCRUAL",
+                status: "CONFIRMED",
+              },
+            });
+
+            // Accrue 20% commission to referred teacher if present and not already accrued
+            const teacherProfile = existingTx.application.referralTeacher;
+            if (teacherProfile && !existingCommission) {
+              const commissionRate = teacherProfile.commissionRate || 0.20;
+              const commissionAmount = Math.round(existingTx.amount * commissionRate * 100) / 100;
+
+              // Record ledger transaction entry
+              await tx.ledgerTransaction.create({
+                data: {
+                  teacherId: teacherProfile.id,
+                  applicationId: existingTx.applicationId,
+                  paymentTransactionId: existingTx.id,
+                  type: "COMMISSION_ACCRUAL",
+                  amount: commissionAmount,
+                  status: "CONFIRMED",
+                  description: `20% referral commission for application ${existingTx.application.code}`,
+                },
+              });
+
+              // Increment teacher balance atomically
+              await tx.teacherProfile.update({
+                where: { id: teacherProfile.id },
+                data: {
+                  balance: {
+                    increment: commissionAmount,
+                  },
+                },
+              });
+            }
+
+            // Add audit log
+            await tx.auditLog.create({
+              data: {
+                userId: existingTx.userId,
+                action: "PAYMENT_CONFIRMED",
+                entityType: "Application",
+                entityId: existingTx.applicationId,
+                details: JSON.stringify({
+                  transactionId: payload.transactionId,
+                  amount: existingTx.amount,
+                  currency: expectedCurrency,
+                  teacherCommissionAccrued: Boolean(teacherProfile && !existingCommission),
+                }),
+              },
+            });
           },
+          {
+            maxWait: 10000,
+            timeout: 15000,
+          }
+        );
+      } catch (err: unknown) {
+        // If concurrent transactions queued and one timed out waiting for the database lock,
+        // recheck if the transaction was successfully confirmed by the winning concurrent execution
+        const recheck = await prisma.paymentTransaction.findUnique({
+          where: { id: existingTx.id },
         });
-      });
+        if (recheck?.status === "CONFIRMED") {
+          return {
+            received: true,
+            status: "ALREADY_PROCESSED",
+            message: "Transaction has already been processed and confirmed",
+          };
+        }
+        throw err;
+      }
 
       if (!isWinner) {
         return {
