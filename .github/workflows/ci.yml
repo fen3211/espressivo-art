@@ -3,12 +3,14 @@ name: CI
 on:
   push:
     branches:
+      - main
       - master
       - 'fix/**'
       - 'feat/**'
       - 'security/**'
   pull_request:
     branches:
+      - main
       - master
 
 # Principle of least privilege: token has read-only access to repository contents
