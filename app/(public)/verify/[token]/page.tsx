@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import prisma from '@/lib/prisma';
-import { Award, CheckCircle2, ShieldCheck, AlertTriangle, ArrowLeft } from 'lucide-react';
+import { Award, CheckCircle2, ShieldCheck, AlertTriangle, ArrowLeft, Lock } from 'lucide-react';
 
 interface VerifyPageProps {
   params: Promise<{
@@ -29,6 +29,7 @@ export default async function CertificateVerificationPage(props: VerifyPageProps
         application: {
           select: {
             status: true,
+            consentPublicStream: true,
           },
         },
       },
@@ -36,6 +37,7 @@ export default async function CertificateVerificationPage(props: VerifyPageProps
   }
 
   const isValid = Boolean(certificate && certificate.application?.status !== 'REJECTED');
+  const hasPublicConsent = Boolean(certificate?.application?.consentPublicStream);
 
   return (
     <div className="max-w-[1440px] mx-auto px-6 sm:px-10 py-16 sm:py-24">
@@ -90,7 +92,10 @@ export default async function CertificateVerificationPage(props: VerifyPageProps
                     Присужденная награда
                   </span>
                   <span className="font-sans font-bold text-sm text-[#a38344]">
-                    {certificate.awardDegree} ({certificate.totalScore.toFixed(1)} баллов)
+                    {certificate.awardDegree}
+                    {hasPublicConsent && typeof certificate.totalScore === 'number'
+                      ? ` (${certificate.totalScore.toFixed(1)} баллов)`
+                      : ''}
                   </span>
                 </div>
 
@@ -98,9 +103,16 @@ export default async function CertificateVerificationPage(props: VerifyPageProps
                   <span className="text-[#757580] uppercase tracking-wider font-sans text-[10px]">
                     Участник (152-ФЗ)
                   </span>
-                  <span className="font-sans font-semibold text-[#000000]">
-                    {maskMinorName(certificate.participantName)}
-                  </span>
+                  {hasPublicConsent ? (
+                    <span className="font-sans font-semibold text-[#000000]">
+                      {maskMinorName(certificate.participantName)}
+                    </span>
+                  ) : (
+                    <span className="font-sans text-xs text-[#757580] italic flex items-center gap-1.5">
+                      <Lock className="w-3 h-3 text-[#757580]" />
+                      Скрыто в соответствии со ст. 10.1 152-ФЗ
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex justify-between items-baseline border-b border-[#e5e0d8] pb-2">
@@ -139,7 +151,9 @@ export default async function CertificateVerificationPage(props: VerifyPageProps
               <div className="p-3 bg-[#f0eae1] rounded text-[11px] font-sans text-[#666666] flex items-start gap-2">
                 <ShieldCheck className="w-4 h-4 text-[#a38344] shrink-0 mt-0.5" />
                 <span>
-                  В соответствии с требованиями Федерального закона № 152-ФЗ «О персональных данных» и ст. 8 GDPR, полное имя несовершеннолетнего участника защищено от публичной индексации.
+                  {hasPublicConsent
+                    ? 'В соответствии с требованиями ст. 10.1 152-ФЗ и ст. 8 GDPR, публикация сведений осуществляется на основании отдельного согласия на распространение ПДн. Имя сокращено для защиты от автоматизированного сбора.'
+                    : 'В соответствии со ст. 10.1 152-ФЗ «О персональных данных», имя несовершеннолетнего участника и конкурсный балл защищены от публичного раскрытия в связи с отсутствием отдельного согласия на распространение ПДн. Подлинность диплома и наградная квалификация официально подтверждены.'}
                 </span>
               </div>
             </div>

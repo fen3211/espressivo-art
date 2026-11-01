@@ -79,7 +79,43 @@ describe("Certificates & High-Print Diploma Module", () => {
     expect(data.privacyProtected).toBe(true);
     expect(data.awardDegree).toBe("LAUREATE_1");
     expect(data.totalScore).toBe(96);
+    expect(data.publicConsentGranted).toBe(true);
     expect(data.certificateNumber).toContain("ESP-VOC-2026-1005-");
+  });
+
+  it("should NOT disclose minor name or totalScore when consentPublicStream is false (152-FZ Art. 10.1)", async () => {
+    // Temporarily set consentPublicStream to false on test application
+    await prisma.application.update({
+      where: { id: testAppId },
+      data: { consentPublicStream: false },
+    });
+
+    try {
+      const req = new Request(`http://localhost:3000/api/public/verify-certificate/${validToken}`);
+      const res = await verifyCertificateHandler(req, {
+        params: Promise.resolve({ token: validToken }),
+      });
+
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.isValid).toBe(true);
+      expect(data.publicConsentGranted).toBe(false);
+      // Under 152-FZ Art. 10.1, neither name (even masked) nor totalScore may be published without separate consent
+      expect(data.participantName).toBeUndefined();
+      expect(data.participantNameMasked).toBeUndefined();
+      expect(data.totalScore).toBeUndefined();
+      // Credential authenticity confirmation remains intact
+      expect(data.certificateNumber).toContain("ESP-VOC-2026-1005-");
+      expect(data.awardDegree).toBe("LAUREATE_1");
+      expect(data.competitionTitle).toBeDefined();
+      expect(data.nominationTitle).toBeDefined();
+    } finally {
+      // Restore consentPublicStream to true
+      await prisma.application.update({
+        where: { id: testAppId },
+        data: { consentPublicStream: true },
+      });
+    }
   });
 
   it("should reject token enumeration attempts (short or invalid token length)", async () => {

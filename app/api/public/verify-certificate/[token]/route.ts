@@ -37,6 +37,7 @@ export async function GET(
         application: {
           select: {
             status: true,
+            consentPublicStream: true,
           },
         },
       },
@@ -54,20 +55,31 @@ export async function GET(
       );
     }
 
-    // MINOR PRIVACY & DATA MINIMIZATION:
-    // Only return non-sensitive authenticity confirmation:
-    // Valid status, certificate number, masked name, competition, nomination, degree, and issue date.
-    // Absolute exclusion of guardian contacts, emails, phones, user IDs, and raw internal DB records.
+    // 152-FZ (Art. 10.1) & 149-FZ MINOR PRIVACY BY DESIGN:
+    // Differentiate mandatory internal processing consent (Art. 9) from voluntary separate
+    // consent for public dissemination (Art. 10.1 of 152-FZ).
+    // By default (or when consentPublicStream is false), unauthenticated public verification
+    // ONLY confirms authenticity and minimal non-PII credential data:
+    // (certificateNumber, competitionTitle, nominationTitle, awardDegree, issuedDate).
+    // Disclosing totalScore and minor's name (even masked) is strictly forbidden unless
+    // explicit separate public dissemination consent (consentPublicStream === true) is granted.
+    const hasPublicDisseminationConsent = Boolean(certificate.application?.consentPublicStream);
+
     return NextResponse.json({
       isValid: true,
       certificateNumber: certificate.certificateNumber,
-      participantNameMasked: maskMinorName(certificate.participantName),
       competitionTitle: certificate.competitionTitle,
       nominationTitle: certificate.nominationTitle,
       awardDegree: certificate.awardDegree,
-      totalScore: certificate.totalScore,
       issuedDate: certificate.issuedDate.toISOString(),
       privacyProtected: true,
+      publicConsentGranted: hasPublicDisseminationConsent,
+      ...(hasPublicDisseminationConsent
+        ? {
+            participantNameMasked: maskMinorName(certificate.participantName),
+            totalScore: certificate.totalScore,
+          }
+        : {}),
     });
   } catch (err: unknown) {
     const error = err as Error;
