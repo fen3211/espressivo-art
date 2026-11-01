@@ -8,9 +8,9 @@ export async function POST(req: Request) {
 
     const { transactionId, applicationId, amount, currency, status, signature } = payload;
 
-    if (!transactionId || !applicationId || amount === undefined || !status) {
+    if (!transactionId || !applicationId || amount === undefined || !currency || !status) {
       return NextResponse.json(
-        { error: "Неполные данные вебхука (требуются transactionId, applicationId, amount, status)" },
+        { error: "Неполные данные вебхука (требуются transactionId, applicationId, amount, currency, status)" },
         { status: 400 }
       );
     }
@@ -20,7 +20,7 @@ export async function POST(req: Request) {
         transactionId,
         applicationId,
         amount: Number(amount),
-        currency: currency ? String(currency) : undefined,
+        currency: String(currency),
         status,
         signature: signature || signatureHeader || "",
       },
