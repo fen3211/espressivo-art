@@ -10,7 +10,7 @@ import { ArrowRight, ShieldCheck } from 'lucide-react';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { locale, t } = useLanguage();
+  const { locale, t, dict } = useLanguage();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -21,14 +21,17 @@ export default function LoginPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
-      setError('Пожалуйста, заполните email и пароль');
+      setError(
+        locale === 'ru'
+          ? 'Пожалуйста, заполните email и пароль'
+          : 'Please provide both email and password'
+      );
       return;
     }
 
     setLoading(true);
     setError('');
 
-    // Attempt real API call if available, otherwise route smoothly
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
@@ -36,51 +39,72 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        if (data.redirectUrl) {
-          router.push(data.redirectUrl);
-          return;
-        }
-      }
-    } catch {
-      // Fallback to role-based routing if API isn't yet up
-    }
+      const data = await res.json().catch(() => ({}));
 
-    // Direct role routing fallback for seamless frontend demonstration
-    setTimeout(() => {
-      setLoading(false);
-      switch (role) {
-        case 'PARTICIPANT':
-          router.push('/dashboard');
-          break;
-        case 'TEACHER':
-          router.push('/teacher');
-          break;
-        case 'JURY':
-          router.push('/jury/dashboard');
-          break;
-        case 'ADMIN':
-          router.push('/admin');
-          break;
+      if (!res.ok) {
+        setError(
+          data.error ||
+            (locale === 'ru'
+              ? 'Неверный логин или пароль'
+              : 'Invalid email or password')
+        );
+        setLoading(false);
+        return;
       }
-    }, 400);
+
+      if (data.redirectUrl) {
+        router.push(data.redirectUrl);
+        return;
+      }
+      router.push('/dashboard');
+    } catch {
+      setError(
+        dict.errors.networkError ||
+          (locale === 'ru'
+            ? 'Ошибка сети. Проверьте соединение с сервером.'
+            : 'Network error. Please check your connection.')
+      );
+      setLoading(false);
+    }
   };
 
-  const quickDemoLogin = (targetRole: 'PARTICIPANT' | 'TEACHER' | 'JURY' | 'ADMIN') => {
-    switch (targetRole) {
-      case 'PARTICIPANT':
-        router.push('/dashboard');
-        break;
-      case 'TEACHER':
-        router.push('/teacher');
-        break;
-      case 'JURY':
-        router.push('/jury/dashboard');
-        break;
-      case 'ADMIN':
-        router.push('/admin');
-        break;
+  const quickDemoLogin = async (targetRole: 'PARTICIPANT' | 'TEACHER' | 'JURY' | 'ADMIN') => {
+    setLoading(true);
+    setError('');
+    const creds: Record<string, { email: string; pass: string }> = {
+      PARTICIPANT: { email: 'participant@espressivo.art', pass: 'pass1234' },
+      TEACHER: { email: 'teacher@espressivo.art', pass: 'pass1234' },
+      JURY: { email: 'jury@espressivo.art', pass: 'pass1234' },
+      ADMIN: { email: 'admin@espressivo.art', pass: 'pass1234' },
+    };
+    const c = creds[targetRole];
+    setEmail(c.email);
+    setPassword(c.pass);
+    setRole(targetRole);
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: c.email, password: c.pass }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        setError(data.error || 'Ошибка демо-входа');
+        setLoading(false);
+        return;
+      }
+
+      if (data.redirectUrl) {
+        router.push(data.redirectUrl);
+        return;
+      }
+      router.push('/dashboard');
+    } catch {
+      setError('Ошибка сети при попытке демо-входа');
+      setLoading(false);
     }
   };
 
@@ -111,7 +135,7 @@ export default function LoginPage() {
               role === 'PARTICIPANT' ? 'bg-[#000000] text-[#ffffff]' : 'text-[#121212] hover:bg-[#e7e7e7]'
             }`}
           >
-            Участник
+            {dict.common.participant}
           </button>
           <button
             type="button"
@@ -120,7 +144,7 @@ export default function LoginPage() {
               role === 'TEACHER' ? 'bg-[#000000] text-[#ffffff]' : 'text-[#121212] hover:bg-[#e7e7e7]'
             }`}
           >
-            Педагог
+            {dict.common.teacher}
           </button>
           <button
             type="button"
@@ -129,7 +153,7 @@ export default function LoginPage() {
               role === 'JURY' ? 'bg-[#000000] text-[#ffffff]' : 'text-[#121212] hover:bg-[#e7e7e7]'
             }`}
           >
-            Жюри
+            {dict.common.jury}
           </button>
           <button
             type="button"
@@ -138,7 +162,7 @@ export default function LoginPage() {
               role === 'ADMIN' ? 'bg-[#000000] text-[#ffffff]' : 'text-[#121212] hover:bg-[#e7e7e7]'
             }`}
           >
-            Админ
+            {dict.common.admin}
           </button>
         </div>
 
@@ -152,7 +176,7 @@ export default function LoginPage() {
 
           <Input
             theme="art"
-            label="Email адрес"
+            label={dict.auth.emailLabel}
             type="email"
             required
             value={email}
@@ -162,7 +186,7 @@ export default function LoginPage() {
 
           <Input
             theme="art"
-            label="Пароль"
+            label={dict.auth.passwordLabel}
             type="password"
             required
             value={password}
@@ -180,7 +204,7 @@ export default function LoginPage() {
         {/* Quick Demo Access Buttons for instant QA / evaluation */}
         <div className="mt-10 pt-8 border-t border-[#000000]/20">
           <div className="text-[10px] uppercase font-mono font-bold tracking-widest text-[#757580] mb-3 text-center">
-            ДЕМО-ДОСТУП В 1 КЛИК ДЛЯ ПРОВЕРКИ
+            {locale === 'ru' ? 'ДЕМО-ДОСТУП В 1 КЛИК ДЛЯ ПРОВЕРКИ' : '1-CLICK DEMO ACCESS FOR QA'}
           </div>
           <div className="grid grid-cols-2 gap-2">
             <Button
@@ -188,37 +212,37 @@ export default function LoginPage() {
               size="sm"
               onClick={() => quickDemoLogin('PARTICIPANT')}
             >
-              Кабинет Участника →
+              {dict.common.participant} →
             </Button>
             <Button
               variant="outline-ink"
               size="sm"
               onClick={() => quickDemoLogin('TEACHER')}
             >
-              Кабинет Педагога (20%) →
+              {dict.common.teacher} (20%) →
             </Button>
             <Button
               variant="outline-ink"
               size="sm"
               onClick={() => quickDemoLogin('JURY')}
             >
-              Терминал Жюри →
+              {dict.common.jury} →
             </Button>
             <Button
               variant="outline-ink"
               size="sm"
               onClick={() => quickDemoLogin('ADMIN')}
             >
-              Панель Администратора →
+              {dict.common.admin} →
             </Button>
           </div>
         </div>
 
         {/* Registration link */}
         <div className="mt-8 text-center text-xs font-serif text-[#121212]">
-          Ещё нет учетной записи?{' '}
+          {locale === 'ru' ? 'Ещё нет учетной записи? ' : "Don't have an account yet? "}
           <Link href="/register" className="font-sans font-bold uppercase underline text-[#000000]">
-            Зарегистрироваться
+            {dict.common.register}
           </Link>
         </div>
       </div>

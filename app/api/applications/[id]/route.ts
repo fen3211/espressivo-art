@@ -33,7 +33,14 @@ export async function GET(
             },
           },
         },
-        referralTeacher: true,
+        referralTeacher: {
+          select: {
+            id: true,
+            referralCode: true,
+            organization: true,
+            userId: true,
+          },
+        },
       },
     });
 
@@ -88,7 +95,22 @@ export async function GET(
       return NextResponse.json({ error: "Доступ к заявке запрещен" }, { status: 403 });
     }
 
-    return NextResponse.json(application);
+    // Strict DTO projection: Never leak teacher's internal or sensitive financial details
+    let sanitizedTeacher: { id: string; referralCode: string; organization: string | null } | null = null;
+    if (application.referralTeacher) {
+      sanitizedTeacher = {
+        id: application.referralTeacher.id,
+        referralCode: application.referralTeacher.referralCode,
+        organization: application.referralTeacher.organization,
+      };
+    }
+
+    const sanitizedApplication = {
+      ...application,
+      referralTeacher: sanitizedTeacher,
+    };
+
+    return NextResponse.json(sanitizedApplication);
   } catch (err: unknown) {
     const error = err as Error;
     console.error("GET /api/applications/[id] error:", error);

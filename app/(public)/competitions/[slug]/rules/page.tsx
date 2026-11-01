@@ -13,12 +13,12 @@ export default function RulesPage() {
   const { locale } = useLanguage();
 
   const awardScale = [
-    { degreeRu: 'Гран-при (Grand Prix)', degreeEn: 'Grand Prix', score: '100 баллов (единогласно)', color: 'text-black font-bold' },
-    { degreeRu: 'Лауреат I степени', degreeEn: 'Laureate 1st Degree', score: '95–99 баллов', color: 'text-black' },
-    { degreeRu: 'Лауреат II степени', degreeEn: 'Laureate 2nd Degree', score: '90–94 балла', color: 'text-black' },
-    { degreeRu: 'Лауреат III степени', degreeEn: 'Laureate 3rd Degree', score: '85–89 баллов', color: 'text-black' },
-    { degreeRu: 'Дипломант', degreeEn: 'Diplomant', score: '80–84 балла', color: 'text-black' },
-    { degreeRu: 'Грамота за участие', degreeEn: 'Certificate of Participation', score: 'менее 80 баллов', color: 'text-[#757580]' },
+    { degreeRu: 'Гран-при (Grand Prix)', degreeEn: 'Grand Prix', scoreRu: '100 баллов (единогласно)', scoreEn: '100 points (unanimous)', color: 'text-black font-bold' },
+    { degreeRu: 'Лауреат I степени', degreeEn: 'Laureate 1st Degree', scoreRu: '95–99 баллов', scoreEn: '95–99 points', color: 'text-black' },
+    { degreeRu: 'Лауреат II степени', degreeEn: 'Laureate 2nd Degree', scoreRu: '90–94 балла', scoreEn: '90–94 points', color: 'text-black' },
+    { degreeRu: 'Лауреат III степени', degreeEn: 'Laureate 3rd Degree', scoreRu: '85–89 баллов', scoreEn: '85–89 points', color: 'text-black' },
+    { degreeRu: 'Дипломант', degreeEn: 'Diplomant', scoreRu: '80–84 балла', scoreEn: '80–84 points', color: 'text-black' },
+    { degreeRu: 'Грамота за участие', degreeEn: 'Certificate of Participation', scoreRu: 'менее 80 баллов', scoreEn: 'under 80 points', color: 'text-[#757580]' },
   ];
 
   return (
@@ -75,31 +75,31 @@ export default function RulesPage() {
               <li>
                 <a href="#video-specs" className="hover:underline flex items-center gap-2">
                   <span className="font-mono text-[#757580]">01.</span>
-                  <span>Требования к видеозаписи</span>
+                  <span>{locale === 'ru' ? 'Требования к видеозаписи' : 'Video Recording Requirements'}</span>
                 </a>
               </li>
               <li>
                 <a href="#scoring-rubric" className="hover:underline flex items-center gap-2">
                   <span className="font-mono text-[#757580]">02.</span>
-                  <span>100-балльная шкала жюри</span>
+                  <span>{locale === 'ru' ? '100-балльная шкала жюри' : '100-Point Adjudication Rubric'}</span>
                 </a>
               </li>
               <li>
                 <a href="#awards-scale" className="hover:underline flex items-center gap-2">
                   <span className="font-mono text-[#757580]">03.</span>
-                  <span>Присуждение степеней</span>
+                  <span>{locale === 'ru' ? 'Присуждение степеней' : 'Award Tier Distribution'}</span>
                 </a>
               </li>
               <li>
                 <a href="#teacher-program" className="hover:underline flex items-center gap-2">
                   <span className="font-mono text-[#757580]">04.</span>
-                  <span>Партнёрская программа 20%</span>
+                  <span>{locale === 'ru' ? 'Партнёрская программа 20%' : 'Teacher Royalty Program (20%)'}</span>
                 </a>
               </li>
               <li>
                 <a href="#compliance" className="hover:underline flex items-center gap-2">
                   <span className="font-mono text-[#757580]">05.</span>
-                  <span>Защита данных (152-ФЗ)</span>
+                  <span>{locale === 'ru' ? 'Защита данных (152-ФЗ)' : 'Data Privacy (152-FZ & GDPR)'}</span>
                 </a>
               </li>
             </ul>
@@ -110,30 +110,54 @@ export default function RulesPage() {
         <div className="lg:col-span-8 space-y-12 font-serif text-[#121212]">
           {/* 01. Video Standards */}
           <section id="video-specs" className="border-b border-[#000000]/20 pb-10">
-            <span className="font-mono text-xs text-[#757580] block mb-2">РАЗДЕЛ 01</span>
+            <span className="font-mono text-xs text-[#757580] block mb-2">
+              {locale === 'ru' ? 'РАЗДЕЛ 01' : 'SECTION 01'}
+            </span>
             <h2 className="text-2xl sm:text-3xl font-serif text-[#000000] mb-4">
-              Технические требования к видеозаписи
+              {locale === 'ru' ? 'Технические требования к видеозаписи' : 'Video Performance Technical Requirements'}
             </h2>
             <div className="space-y-4 text-base leading-relaxed">
               <p>
-                Конкурс проводится в дистанционном формате с гарантией подлинности исполнения. К участию допускаются видеозаписи, соответствующие следующим критериям:
+                {locale === 'ru'
+                  ? 'Конкурс проводится в дистанционном формате с гарантией подлинности исполнения. К участию допускаются видеозаписи, соответствующие следующим критериям:'
+                  : 'The competition is held in remote format with strict performance authenticity verification. Video recordings must conform to the following criteria:'}
               </p>
               <ul className="space-y-2 list-none font-sans text-xs sm:text-sm">
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-[#000000] shrink-0 mt-0.5" />
-                  <span><strong>Непрерывный дубль:</strong> запись исполняется единым непрерывным планом от начала до конца без монтажных склеек.</span>
+                  <span>
+                    <strong>{locale === 'ru' ? 'Непрерывный дубль:' : 'Continuous Take:'}</strong>{' '}
+                    {locale === 'ru'
+                      ? 'запись исполняется единым непрерывным планом от начала до конца без монтажных склеек.'
+                      : 'the performance must be recorded in a single uncut take from beginning to end without edits or splices.'}
+                  </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-[#000000] shrink-0 mt-0.5" />
-                  <span><strong>Запрет коррекции высоты тона:</strong> категорически запрещено применение Auto-Tune, Melodyne и любых программ питч-коррекции. Обнаружение искусственной коррекции ведет к немедленной дисквалификации.</span>
+                  <span>
+                    <strong>{locale === 'ru' ? 'Запрет коррекции высоты тона:' : 'No Pitch Correction:'}</strong>{' '}
+                    {locale === 'ru'
+                      ? 'категорически запрещено применение Auto-Tune, Melodyne и любых программ питч-коррекции. Обнаружение искусственной коррекции ведет к немедленной дисквалификации.'
+                      : 'the use of Auto-Tune, Melodyne, or any pitch-correction software is strictly prohibited. Detection leads to immediate disqualification.'}
+                  </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-[#000000] shrink-0 mt-0.5" />
-                  <span><strong>Видимость исполнителя:</strong> участник должен быть чётко виден в полный рост или по пояс при стабильном освещении.</span>
+                  <span>
+                    <strong>{locale === 'ru' ? 'Видимость исполнителя:' : 'Entrant Visibility:'}</strong>{' '}
+                    {locale === 'ru'
+                      ? 'участник должен быть чётко виден в полный рост или по пояс при стабильном освещении.'
+                      : 'the performer must be clearly framed full-length or medium shot under stable acoustic lighting.'}
+                  </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-[#000000] shrink-0 mt-0.5" />
-                  <span><strong>Разрешение:</strong> минимальное качество Full HD 1080p с чистым акустическим звуком без клиппинга.</span>
+                  <span>
+                    <strong>{locale === 'ru' ? 'Разрешение:' : 'Resolution:'}</strong>{' '}
+                    {locale === 'ru'
+                      ? 'минимальное качество Full HD 1080p с чистым акустическим звуком без клиппинга.'
+                      : 'minimum 1080p Full HD resolution with clean acoustic capture free of clipping or distortion.'}
+                  </span>
                 </li>
               </ul>
             </div>
@@ -141,56 +165,76 @@ export default function RulesPage() {
 
           {/* 02. Scoring Rubric */}
           <section id="scoring-rubric" className="border-b border-[#000000]/20 pb-10">
-            <span className="font-mono text-xs text-[#757580] block mb-2">РАЗДЕЛ 02</span>
+            <span className="font-mono text-xs text-[#757580] block mb-2">
+              {locale === 'ru' ? 'РАЗДЕЛ 02' : 'SECTION 02'}
+            </span>
             <h2 className="text-2xl sm:text-3xl font-serif text-[#000000] mb-4">
-              100-балльная шкала оценивания
+              {locale === 'ru' ? '100-балльная шкала оценивания' : '100-Point Adjudication Rubric'}
             </h2>
             <p className="text-base leading-relaxed mb-6">
-              Каждый член экспертного жюри оценивает выступление независимо по четырём равнозначным критериям (по 25 баллов максимум каждый):
+              {locale === 'ru'
+                ? 'Каждый член экспертного жюри оценивает выступление независимо по четырём равнозначным критериям (по 25 баллов максимум каждый):'
+                : 'Each jury member evaluates performances independently across four equally weighted criteria (up to 25 points each):'}
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="border border-[#000000] p-4 bg-[#dedede]">
                 <div className="flex justify-between font-mono text-xs text-[#757580] mb-1">
-                  <span>КРИТЕРИЙ 1</span>
-                  <span>25 БАЛЛОВ</span>
+                  <span>{locale === 'ru' ? 'КРИТЕРИЙ 1' : 'CRITERION 1'}</span>
+                  <span>{locale === 'ru' ? '25 БАЛЛОВ' : '25 PTS'}</span>
                 </div>
-                <h4 className="text-base font-serif font-bold text-[#000000] mb-1">Вокальная техника и интонация</h4>
+                <h4 className="text-base font-serif font-bold text-[#000000] mb-1">
+                  {locale === 'ru' ? 'Вокальная техника и интонация' : 'Vocal Technique & Intonation'}
+                </h4>
                 <p className="text-xs font-serif text-[#121212]">
-                  Чистота интонирования, дыхание, диапазон, регистровое выравнивание и дикционная точность.
+                  {locale === 'ru'
+                    ? 'Чистота интонирования, дыхание, диапазон, регистровое выравнивание и дикционная точность.'
+                    : 'Intonational accuracy, breath support, vocal range, registration balance, and diction clarity.'}
                 </p>
               </div>
 
               <div className="border border-[#000000] p-4 bg-[#dedede]">
                 <div className="flex justify-between font-mono text-xs text-[#757580] mb-1">
-                  <span>КРИТЕРИЙ 2</span>
-                  <span>25 БАЛЛОВ</span>
+                  <span>{locale === 'ru' ? 'КРИТЕРИЙ 2' : 'CRITERION 2'}</span>
+                  <span>{locale === 'ru' ? '25 БАЛЛОВ' : '25 PTS'}</span>
                 </div>
-                <h4 className="text-base font-serif font-bold text-[#000000] mb-1">Музыкальность и фразировка</h4>
+                <h4 className="text-base font-serif font-bold text-[#000000] mb-1">
+                  {locale === 'ru' ? 'Музыкальность и фразировка' : 'Musicality & Phrasing'}
+                </h4>
                 <p className="text-xs font-serif text-[#121212]">
-                  Чувство стиля, ритмическая стабильность, динамическая нюансировка и логика формы.
+                  {locale === 'ru'
+                    ? 'Чувство стиля, ритмическая стабильность, динамическая нюансировка и логика формы.'
+                    : 'Stylistic awareness, rhythmic precision, dynamic subtlety, and structural phrasing logic.'}
                 </p>
               </div>
 
               <div className="border border-[#000000] p-4 bg-[#dedede]">
                 <div className="flex justify-between font-mono text-xs text-[#757580] mb-1">
-                  <span>КРИТЕРИЙ 3</span>
-                  <span>25 БАЛЛОВ</span>
+                  <span>{locale === 'ru' ? 'КРИТЕРИЙ 3' : 'CRITERION 3'}</span>
+                  <span>{locale === 'ru' ? '25 БАЛЛОВ' : '25 PTS'}</span>
                 </div>
-                <h4 className="text-base font-serif font-bold text-[#000000] mb-1">Артистизм и сценический образ</h4>
+                <h4 className="text-base font-serif font-bold text-[#000000] mb-1">
+                  {locale === 'ru' ? 'Артистизм и сценический образ' : 'Artistry & Stage Presence'}
+                </h4>
                 <p className="text-xs font-serif text-[#121212]">
-                  Эмоциональная глубина, убедительность интерпретации и контакт со слушателем.
+                  {locale === 'ru'
+                    ? 'Эмоциональная глубина, убедительность интерпретации и контакт со слушателем.'
+                    : 'Expressive depth, interpretive authenticity, and artistic audience connection.'}
                 </p>
               </div>
 
               <div className="border border-[#000000] p-4 bg-[#dedede]">
                 <div className="flex justify-between font-mono text-xs text-[#757580] mb-1">
-                  <span>КРИТЕРИЙ 4</span>
-                  <span>25 БАЛЛОВ</span>
+                  <span>{locale === 'ru' ? 'КРИТЕРИЙ 4' : 'CRITERION 4'}</span>
+                  <span>{locale === 'ru' ? '25 БАЛЛОВ' : '25 PTS'}</span>
                 </div>
-                <h4 className="text-base font-serif font-bold text-[#000000] mb-1">Сложность репертуара</h4>
+                <h4 className="text-base font-serif font-bold text-[#000000] mb-1">
+                  {locale === 'ru' ? 'Сложность репертуара' : 'Repertoire Complexity'}
+                </h4>
                 <p className="text-xs font-serif text-[#121212]">
-                  Соответствие репертуара возрасту исполнителя и художественная зрелость выбора.
+                  {locale === 'ru'
+                    ? 'Соответствие репертуара возрасту исполнителя и художественная зрелость выбора.'
+                    : 'Suitability to entrant age division and technical and artistic maturity of programming.'}
                 </p>
               </div>
             </div>
@@ -198,16 +242,22 @@ export default function RulesPage() {
 
           {/* 03. Awards Scale */}
           <section id="awards-scale" className="border-b border-[#000000]/20 pb-10">
-            <span className="font-mono text-xs text-[#757580] block mb-2">РАЗДЕЛ 03</span>
+            <span className="font-mono text-xs text-[#757580] block mb-2">
+              {locale === 'ru' ? 'РАЗДЕЛ 03' : 'SECTION 03'}
+            </span>
             <h2 className="text-2xl sm:text-3xl font-serif text-[#000000] mb-4">
-              Таблица присуждения степеней и дипломов
+              {locale === 'ru' ? 'Таблица присуждения степеней и дипломов' : 'Award Degrees & Point Thresholds'}
             </h2>
             <div className="border border-[#000000] overflow-hidden">
               <table className="w-full text-left font-serif text-sm">
                 <thead>
                   <tr className="border-b border-[#000000] bg-[#dedede] font-sans text-[10px] uppercase font-bold tracking-wider">
-                    <th className="p-3 border-r border-[#000000]">Присуждаемая степень</th>
-                    <th className="p-3">Требуемый суммарный балл</th>
+                    <th className="p-3 border-r border-[#000000]">
+                      {locale === 'ru' ? 'Присуждаемая степень' : 'Awarded Distinction'}
+                    </th>
+                    <th className="p-3">
+                      {locale === 'ru' ? 'Требуемый суммарный балл' : 'Required Cumulative Score'}
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#000000]">
@@ -216,7 +266,9 @@ export default function RulesPage() {
                       <td className={`p-3 border-r border-[#000000] ${row.color}`}>
                         {locale === 'ru' ? row.degreeRu : row.degreeEn}
                       </td>
-                      <td className="p-3 font-mono text-xs">{row.score}</td>
+                      <td className="p-3 font-mono text-xs">
+                        {locale === 'ru' ? row.scoreRu : row.scoreEn}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -226,26 +278,36 @@ export default function RulesPage() {
 
           {/* 04. Teacher Royalty */}
           <section id="teacher-program" className="border-b border-[#000000]/20 pb-10">
-            <span className="font-mono text-xs text-[#757580] block mb-2">РАЗДЕЛ 04</span>
+            <span className="font-mono text-xs text-[#757580] block mb-2">
+              {locale === 'ru' ? 'РАЗДЕЛ 04' : 'SECTION 04'}
+            </span>
             <h2 className="text-2xl sm:text-3xl font-serif text-[#000000] mb-4">
-              Партнёрская программа для преподавателей (20%)
+              {locale === 'ru' ? 'Партнёрская программа для преподавателей (20%)' : 'Teacher Royalty Program (20%)'}
             </h2>
             <p className="text-base leading-relaxed mb-4">
-              Платформа espressivo ART ценит вклад педагогов в подготовку юных дарований. За каждую оплаченную заявку, поданную по рекомендации педагога, начисляется партнерское вознаграждение в размере 20% от регистрационного взноса (500 ₽ с каждого сольного участия).
+              {locale === 'ru'
+                ? 'Платформа espressivo ART ценит вклад педагогов в подготовку юных дарований. За каждую оплаченную заявку, поданную по рекомендации педагога, начисляется партнерское вознаграждение в размере 20% от регистрационного взноса (500 ₽ с каждого сольного участия).'
+                : 'espressivo ART honors the dedication of music pedagogues. For each completed entry submitted through a teacher recommendation, a 20% royalty is credited directly to the teacher account balance.'}
             </p>
             <p className="text-base leading-relaxed">
-              Выплаты осуществляются официально на расчетный счет или банковскую карту преподавателя по запросу в личном кабинете.
+              {locale === 'ru'
+                ? 'Выплаты осуществляются официально на расчетный счет или банковскую карту преподавателя по запросу в личном кабинете.'
+                : 'Payouts are executed officially to bank accounts or payment cards upon request within the teacher workspace.'}
             </p>
           </section>
 
           {/* 05. 152-FZ Compliance */}
           <section id="compliance">
-            <span className="font-mono text-xs text-[#757580] block mb-2">РАЗДЕЛ 05</span>
+            <span className="font-mono text-xs text-[#757580] block mb-2">
+              {locale === 'ru' ? 'РАЗДЕЛ 05' : 'SECTION 05'}
+            </span>
             <h2 className="text-2xl sm:text-3xl font-serif text-[#000000] mb-4">
-              Защита персональных данных (152-ФЗ и GDPR)
+              {locale === 'ru' ? 'Защита персональных данных (152-ФЗ и GDPR)' : 'Data Privacy Standards (152-FZ & GDPR)'}
             </h2>
             <p className="text-base leading-relaxed">
-              Все персональные данные несовершеннолетних участников и их законных представителей собираются исключительно для целей проведения конкурса, выдачи официальных дипломов и верификации результатов. Данные не передаются третьим лицам.
+              {locale === 'ru'
+                ? 'Все персональные данные несовершеннолетних участников и их законных представителей собираются исключительно для целей проведения конкурса, выдачи официальных дипломов и верификации результатов. Данные не передаются третьим лицам.'
+                : 'All personal data of minor participants and their legal guardians is processed strictly for adjudication, official diploma issuance, and credential verification in accordance with 152-FZ and GDPR standards.'}
             </p>
           </section>
         </div>

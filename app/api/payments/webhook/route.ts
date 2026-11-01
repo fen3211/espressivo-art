@@ -6,7 +6,7 @@ export async function POST(req: Request) {
     const signatureHeader = req.headers.get("x-signature") || undefined;
     const payload = await req.json();
 
-    const { transactionId, applicationId, amount, status, signature } = payload;
+    const { transactionId, applicationId, amount, currency, status, signature } = payload;
 
     if (!transactionId || !applicationId || amount === undefined || !status) {
       return NextResponse.json(
@@ -20,13 +20,14 @@ export async function POST(req: Request) {
         transactionId,
         applicationId,
         amount: Number(amount),
+        currency: currency ? String(currency) : undefined,
         status,
         signature: signature || signatureHeader || "",
       },
       signatureHeader
     );
 
-    if (!result.received && result.status === "FAILED") {
+    if (result.status === "FAILED") {
       return NextResponse.json({ error: result.message || "Ошибка обработки вебхука" }, { status: 400 });
     }
 

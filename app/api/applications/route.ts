@@ -154,16 +154,10 @@ export async function POST(req: Request) {
       isSubmit,
     } = body;
 
-    // Legal & minor consent check
+    // Legal & minor consent check: 152-FZ / GDPR data processing is strictly required
     if (!consentDataProcess) {
       return NextResponse.json(
         { error: "Требуется согласие родителя/законного представителя на обработку персональных данных (152-ФЗ / GDPR)" },
-        { status: 400 }
-      );
-    }
-    if (!consentPublicStream) {
-      return NextResponse.json(
-        { error: "Требуется согласие на конкурсный показ видеозаписи и подтверждение подлинности исполнения" },
         { status: 400 }
       );
     }
@@ -179,7 +173,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Укажите контактные данные законного представителя" }, { status: 400 });
     }
 
-    // Verify foreign keys exist
+    // Verify foreign keys exist and belong to the specified competition
     const competition = await prisma.competition.findUnique({ where: { id: competitionId } });
     if (!competition) {
       return NextResponse.json({ error: "Конкурс не найден" }, { status: 404 });
@@ -189,10 +183,48 @@ export async function POST(req: Request) {
     if (!nomination) {
       return NextResponse.json({ error: "Номинация не найдена" }, { status: 404 });
     }
+    if (nomination.competitionId !== competitionId) {
+      return NextResponse.json(
+        { error: "Выбранная номинация не принадлежит указанному конкурсу", code: "INVALID_NOMINATION" },
+        { status: 400 }
+      );
+    }
 
     const ageCategory = await prisma.ageCategory.findUnique({ where: { id: ageCategoryId } });
     if (!ageCategory) {
       return NextResponse.json({ error: "Возрастная категория не найдена" }, { status: 404 });
+    }
+    if (ageCategory.competitionId !== competitionId) {
+      return NextResponse.json(
+        { error: "Выбранная возрастная категория не принадлежит указанному конкурсу", code: "INVALID_AGE_CATEGORY" },
+        { status: 400 }
+      );
+    }
+
+    // Validate participant age on competition date (2026)
+    const birthDateObj = new Date(birthDate);
+    if (isNaN(birthDateObj.getTime())) {
+      return NextResponse.json({ error: "Указана некорректная дата рождения участника" }, { status: 400 });
+    }
+
+    const compRefDate = competition.startDate ? new Date(competition.startDate) : new Date("2026-02-01T00:00:00Z");
+    let participantAge = compRefDate.getFullYear() - birthDateObj.getFullYear();
+    const monthDiff = compRefDate.getMonth() - birthDateObj.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && compRefDate.getDate() < birthDateObj.getDate())) {
+      participantAge--;
+    }
+
+    if (participantAge < ageCategory.minAge || participantAge > ageCategory.maxAge) {
+      return NextResponse.json(
+        {
+          error: `INVALID_AGE_FOR_CATEGORY: Возраст участника (${participantAge} лет на дату проведения конкурса) не соответствует категории "${ageCategory.titleRu}" (${ageCategory.minAge}–${ageCategory.maxAge} лет)`,
+          code: "INVALID_AGE_FOR_CATEGORY",
+          calculatedAge: participantAge,
+          minAge: ageCategory.minAge,
+          maxAge: ageCategory.maxAge,
+        },
+        { status: 400 }
+      );
     }
 
     // Check referral teacher

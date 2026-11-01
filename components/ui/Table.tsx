@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useLanguage } from '@/components/LanguageContext';
 
 export interface Column<T> {
   key: string;
@@ -26,9 +27,24 @@ export function Table<T extends Record<string, unknown>>({
   theme = 'cinema',
   onRowClick,
   isLoading = false,
-  emptyText = 'Нет данных для отображения',
+  emptyText,
   className = '',
 }: TableProps<T>) {
+  let langContext: ReturnType<typeof useLanguage> | null = null;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    langContext = useLanguage();
+  } catch {
+    // fallback
+  }
+
+  const resolvedEmptyText =
+    emptyText ||
+    langContext?.dict.common.emptyData ||
+    (langContext?.locale === 'en' ? 'No data to display' : 'Нет данных для отображения');
+  const loadingLabel =
+    langContext?.dict.common.loading ||
+    (langContext?.locale === 'en' ? 'Loading data...' : 'Загрузка данных...');
   if (theme === 'art') {
     return (
       <div className={`w-full overflow-x-auto border border-[#000000] rounded-none ${className}`}>
@@ -52,13 +68,13 @@ export function Table<T extends Record<string, unknown>>({
             {isLoading ? (
               <tr>
                 <td colSpan={columns.length} className="p-8 text-center text-sm font-sans text-[#757580]">
-                  Загрузка...
+                  {loadingLabel}
                 </td>
               </tr>
             ) : data.length === 0 ? (
               <tr>
                 <td colSpan={columns.length} className="p-8 text-center text-sm font-sans text-[#757580]">
-                  {emptyText}
+                  {resolvedEmptyText}
                 </td>
               </tr>
             ) : (
@@ -116,14 +132,14 @@ export function Table<T extends Record<string, unknown>>({
               <td colSpan={columns.length} className="p-10 text-center text-sm text-[#757580]">
                 <div className="flex justify-center items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-[#6199f6] animate-pulse" />
-                  <span>Загрузка данных...</span>
+                  <span>{loadingLabel}</span>
                 </div>
               </td>
             </tr>
           ) : data.length === 0 ? (
             <tr>
               <td colSpan={columns.length} className="p-10 text-center text-sm text-[#757580]">
-                {emptyText}
+                {resolvedEmptyText}
               </td>
             </tr>
           ) : (

@@ -18,7 +18,8 @@ export default function NominationsPage() {
       titleEn: 'Nomination A: Academic & Classical Vocal (Solo)',
       repertoireRu: '1 конкурсное произведение: оперная ария, старинная ария, классический романс или духовное сочинение. Исполнение на языке оригинала.',
       repertoireEn: '1 competition piece: opera aria, antique canzona, classical art romance, or sacred composition. In the original language.',
-      timeLimit: 'до 4 минут 30 секунд',
+      timeLimitRu: 'до 4 минут 30 секунд',
+      timeLimitEn: 'up to 4 min 30 sec',
       accompanimentRu: 'Фортепиано живьем или качественная инструментальная фонограмма минус 1.',
       accompanimentEn: 'Live piano accompaniment or high-quality minus-one audio track.',
     },
@@ -28,7 +29,8 @@ export default function NominationsPage() {
       titleEn: 'Nomination B: Pop & Contemporary Vocal (Solo)',
       repertoireRu: '1 произведение: мировая эстрадная классика, современная авторская песня, баллада или акустическая интерпретация.',
       repertoireEn: '1 piece: contemporary world pop repertoire, original compositions, acoustic arrangements.',
-      timeLimit: 'до 4 минут 00 секунд',
+      timeLimitRu: 'до 4 минут 00 секунд',
+      timeLimitEn: 'up to 4 min 00 sec',
       accompanimentRu: 'Качественная фонограмма минус 1 без бэк-вокалов, дублирующих основную мелодию.',
       accompanimentEn: 'Minus-one audio track without guide backing vocals on the main melodic line.',
     },
@@ -38,7 +40,8 @@ export default function NominationsPage() {
       titleEn: 'Nomination C: Jazz Vocal & Scat Improvisation (Solo)',
       repertoireRu: '1 джазовый стандарт, блюзовая баллада или соул-произведение. Приветствуется демонстрация вокальной импровизации (скэт).',
       repertoireEn: '1 jazz standard, blues ballad, or soul work. Demonstrations of vocal scat improvisation encouraged.',
-      timeLimit: 'до 4 минут 30 секунд',
+      timeLimitRu: 'до 4 минут 30 секунд',
+      timeLimitEn: 'up to 4 min 30 sec',
       accompanimentRu: 'Инструментальное трио, рояль или качественный инструментальный минус.',
       accompanimentEn: 'Live jazz combo, piano, or verified instrumental backing track.',
     },
@@ -48,7 +51,8 @@ export default function NominationsPage() {
       titleEn: 'Nomination D: Traditional Folk & Ethno Vocal (Solo)',
       repertoireRu: 'Аутентичный фольклор своего региона или стилизованная народная песня. Допускается исполнение a cappella.',
       repertoireEn: 'Authentic regional folklore or stylized folk arrangement. A cappella performances welcome.',
-      timeLimit: 'до 4 минут 00 секунд',
+      timeLimitRu: 'до 4 минут 00 секунд',
+      timeLimitEn: 'up to 4 min 00 sec',
       accompanimentRu: 'Традиционные народные инструменты или a cappella.',
       accompanimentEn: 'Traditional acoustic folk instruments or a cappella.',
     },
@@ -58,7 +62,8 @@ export default function NominationsPage() {
       titleEn: 'Nomination E: Vocal Ensembles & Duets (Chamber)',
       repertoireRu: '1 разнохарактерное произведение с демонстрацией многоголосия (от 2 до 12 человек в составе).',
       repertoireEn: '1 polyphonic work showcasing harmony and vocal blending (2 to 12 performers).',
-      timeLimit: 'до 6 минут 00 секунд',
+      timeLimitRu: 'до 6 минут 00 секунд',
+      timeLimitEn: 'up to 6 min 00 sec',
       accompanimentRu: 'Любой тип аккомпанемента или a cappella.',
       accompanimentEn: 'Any verified accompaniment format or a cappella.',
     },
@@ -112,7 +117,8 @@ export default function NominationsPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#000000]/15 pb-4 mb-4">
               <span className="font-mono text-xs font-bold text-[#757580]">{nom.code}</span>
               <span className="text-[10px] uppercase font-sans font-bold tracking-widest px-2.5 py-1 border border-[#000000] bg-[#000000] text-white">
-                Лимит: {nom.timeLimit}
+                {locale === 'ru' ? 'Лимит: ' : 'Limit: '}
+                {locale === 'ru' ? nom.timeLimitRu : nom.timeLimitEn}
               </span>
             </div>
 
@@ -148,10 +154,18 @@ export default function NominationsPage() {
           <table className="w-full text-left border-collapse font-serif">
             <thead>
               <tr className="border-b border-[#000000] bg-[#dedede] font-sans text-[10px] uppercase font-bold tracking-wider">
-                <th className="p-4 border-r border-[#000000]">Код группы</th>
-                <th className="p-4 border-r border-[#000000]">Название категории</th>
-                <th className="p-4 border-r border-[#000000]">Возраст на дату подачи</th>
-                <th className="p-4">Макс. хронометраж</th>
+                <th className="p-4 border-r border-[#000000]">
+                  {locale === 'ru' ? 'Код группы' : 'Group Code'}
+                </th>
+                <th className="p-4 border-r border-[#000000]">
+                  {locale === 'ru' ? 'Название категории' : 'Category Name'}
+                </th>
+                <th className="p-4 border-r border-[#000000]">
+                  {locale === 'ru' ? 'Возраст на дату подачи' : 'Age at Submission'}
+                </th>
+                <th className="p-4">
+                  {locale === 'ru' ? 'Макс. хронометраж' : 'Max Duration'}
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#000000]">
@@ -166,7 +180,9 @@ export default function NominationsPage() {
                   <td className="p-4 text-sm border-r border-[#000000]">
                     {locale === 'ru' ? grp.ageRu : grp.ageEn}
                   </td>
-                  <td className="p-4 font-mono text-xs">{grp.maxDur} мин</td>
+                  <td className="p-4 font-mono text-xs">
+                    {grp.maxDur} {locale === 'ru' ? 'мин' : 'min'}
+                  </td>
                 </tr>
               ))}
             </tbody>

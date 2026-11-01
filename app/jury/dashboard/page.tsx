@@ -2,12 +2,14 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useLanguage } from '@/components/LanguageContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { CheckSquare, Play, Clock, EyeOff, Award, ArrowRight } from 'lucide-react';
+import { Play, EyeOff, ArrowRight } from 'lucide-react';
 
 export default function JuryDashboardPage() {
+  const { locale, dict } = useLanguage();
+
   const stats = {
     totalAssigned: 24,
     completed: 18,
@@ -19,18 +21,22 @@ export default function JuryDashboardPage() {
     {
       id: 'app-001',
       code: 'ENTRY // EXP-2026-0042',
-      nomination: 'Академический вокал (Соло)',
-      category: 'Группа II (12–14 лет)',
-      repertoire: 'Дж. Перголези — Канцона "Se tu m\'ami"',
-      duration: '3:30 мин',
+      nominationRu: 'Академический вокал (Соло)',
+      nominationEn: 'Academic Vocal (Solo)',
+      categoryRu: 'Группа II (12–14 лет)',
+      categoryEn: 'Group II (12–14 yrs)',
+      repertoire: "G. Pergolesi — Canzona \"Se tu m'ami\"",
+      duration: '3:30',
     },
     {
       id: 'app-003',
       code: 'ENTRY // EXP-2026-0155',
-      nomination: 'Джазовый вокал',
-      category: 'Группа II (12–14 лет)',
-      repertoire: 'Дж. Гершвин — "Summertime"',
-      duration: '4:10 мин',
+      nominationRu: 'Джазовый вокал',
+      nominationEn: 'Jazz Vocal',
+      categoryRu: 'Группа II (12–14 лет)',
+      categoryEn: 'Group II (12–14 yrs)',
+      repertoire: 'G. Gershwin — "Summertime"',
+      duration: '4:10',
     },
   ];
 
@@ -45,16 +51,20 @@ export default function JuryDashboardPage() {
             JURY CONTROL TERMINAL // SEASON 2026
           </div>
           <h1 className="text-2xl sm:text-3xl font-medium text-[#fcfcfc]">
-            Проф. Вальтер Кауфманн
+            Prof. Walter Kaufmann
           </h1>
           <p className="text-xs sm:text-sm text-[#a3a3b3] mt-1">
-            Председатель судейской коллегии • Раунд слепого прослушивания
+            {locale === 'ru'
+              ? 'Председатель судейской коллегии • Раунд слепого прослушивания'
+              : 'Jury Board President • Blind Audition Round'}
           </p>
         </div>
 
         <Link href="/jury/applications/app-001">
           <Button variant="iris-action" size="md" iconLeft={<Play className="w-4 h-4" />}>
-            Продолжить судейство (6 в очереди)
+            {locale === 'ru'
+              ? 'Продолжить судейство (6 в очереди)'
+              : 'Continue Adjudication (6 in queue)'}
           </Button>
         </Link>
       </div>
@@ -64,9 +74,13 @@ export default function JuryDashboardPage() {
         {/* Progress Bar Card */}
         <Card padding="lg" className="lg:col-span-8 space-y-4">
           <div className="flex justify-between items-center text-xs">
-            <span className="text-[#a3a3b3] uppercase font-mono">Прогресс проверки очереди:</span>
+            <span className="text-[#a3a3b3] uppercase font-mono">
+              {locale === 'ru' ? 'Прогресс проверки очереди:' : 'Queue Evaluation Progress:'}
+            </span>
             <span className="font-mono text-[#6199f6] font-bold">
-              {stats.completed} из {stats.totalAssigned} заявок ({progressPercent}%)
+              {locale === 'ru'
+                ? `${stats.completed} из ${stats.totalAssigned} заявок (${progressPercent}%)`
+                : `${stats.completed} of ${stats.totalAssigned} entries (${progressPercent}%)`}
             </span>
           </div>
 
@@ -79,15 +93,21 @@ export default function JuryDashboardPage() {
 
           <div className="grid grid-cols-3 gap-4 pt-2 text-center text-xs">
             <div>
-              <span className="text-[#757580] block">Осталось в очереди:</span>
+              <span className="text-[#757580] block">
+                {locale === 'ru' ? 'Осталось в очереди:' : 'Pending in queue:'}
+              </span>
               <span className="font-mono text-xl font-bold text-[#eab308]">{stats.pending}</span>
             </div>
             <div>
-              <span className="text-[#757580] block">Оценено работ:</span>
+              <span className="text-[#757580] block">
+                {locale === 'ru' ? 'Оценено работ:' : 'Evaluated entries:'}
+              </span>
               <span className="font-mono text-xl font-bold text-[#22c55e]">{stats.completed}</span>
             </div>
             <div>
-              <span className="text-[#757580] block">Ваш средний балл:</span>
+              <span className="text-[#757580] block">
+                {locale === 'ru' ? 'Ваш средний балл:' : 'Your average score:'}
+              </span>
               <span className="font-mono text-xl font-bold text-[#6199f6]">{stats.avgScore}</span>
             </div>
           </div>
@@ -98,13 +118,15 @@ export default function JuryDashboardPage() {
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-xs font-mono text-[#6199f6]">
               <EyeOff className="w-4 h-4" />
-              <span>ПРОТОКОЛ ЧИСТОТЫ ОЦЕНКИ</span>
+              <span>{locale === 'ru' ? 'ПРОТОКОЛ ЧИСТОТЫ ОЦЕНКИ' : 'IMPARTIAL AUDITION PROTOCOL'}</span>
             </div>
             <h3 className="text-base font-medium text-[#fcfcfc]">
-              Слепое прослушивание активно
+              {locale === 'ru' ? 'Слепое прослушивание активно' : 'Blind Audition Active'}
             </h3>
             <p className="text-xs text-[#a3a3b3] leading-relaxed">
-              Фамилии и школы участников скрыты до завершения судейства. Оценивайте технику, строй и художественное исполнение.
+              {locale === 'ru'
+                ? 'Фамилии и школы участников скрыты до завершения судейства. Оценивайте технику, строй и художественное исполнение.'
+                : 'Entrant identities and schools are redacted until adjudication is complete. Focus on intonation, technique, and artistry.'}
             </p>
           </div>
 
@@ -118,13 +140,13 @@ export default function JuryDashboardPage() {
       <div className="space-y-4">
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-medium text-[#fcfcfc]">
-            Следующие заявки в очереди на прослушивание
+            {locale === 'ru' ? 'Следующие заявки в очереди на прослушивание' : 'Next Entries in Evaluation Queue'}
           </h2>
           <Link
             href="/jury/applications"
             className="text-xs text-[#6199f6] hover:underline flex items-center gap-1 font-mono"
           >
-            <span>Вся очередь</span>
+            <span>{locale === 'ru' ? 'Вся очередь' : 'Full Queue'}</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
@@ -143,18 +165,18 @@ export default function JuryDashboardPage() {
                     {entry.code}
                   </span>
                   <span className="text-[10px] font-mono bg-[#040407] border border-[#2a2a32] px-2 py-0.5 rounded-full text-[#a3a3b3]">
-                    Хронометраж: {entry.duration}
+                    {locale === 'ru' ? 'Хронометраж: ' : 'Duration: '}{entry.duration} {locale === 'ru' ? 'мин' : 'min'}
                   </span>
                 </div>
                 <h3 className="text-base font-medium text-[#fcfcfc]">{entry.repertoire}</h3>
                 <div className="text-xs text-[#757580]">
-                  {entry.nomination} • {entry.category}
+                  {locale === 'ru' ? entry.nominationRu : entry.nominationEn} • {locale === 'ru' ? entry.categoryRu : entry.categoryEn}
                 </div>
               </div>
 
               <Link href={`/jury/applications/${entry.id}`}>
                 <Button variant="iris-action" size="sm" iconLeft={<Play className="w-3.5 h-3.5" />}>
-                  Открыть в терминале
+                  {locale === 'ru' ? 'Открыть в терминале' : 'Open in Terminal'}
                 </Button>
               </Link>
             </Card>

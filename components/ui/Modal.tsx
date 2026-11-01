@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
+import { useLanguage } from '@/components/LanguageContext';
 
 export interface ModalProps {
   isOpen: boolean;
@@ -21,6 +22,14 @@ export function Modal({
   footer,
   maxWidth = 'md',
 }: ModalProps) {
+  let closeLabel = 'Закрыть';
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const lang = useLanguage();
+    closeLabel = lang.dict.common.close;
+  } catch {
+    // fallback
+  }
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -55,7 +64,7 @@ export function Modal({
             <button
               onClick={onClose}
               className="text-lg font-mono hover:opacity-60 cursor-pointer p-1"
-              aria-label="Закрыть"
+              aria-label={closeLabel}
             >
               [✕]
             </button>
@@ -80,7 +89,7 @@ export function Modal({
           <button
             onClick={onClose}
             className="w-8 h-8 rounded-full flex items-center justify-center text-[#a3a3b3] hover:text-[#fcfcfc] hover:bg-[#2a2a32] transition-colors cursor-pointer"
-            aria-label="Закрыть"
+            aria-label={closeLabel}
           >
             ✕
           </button>

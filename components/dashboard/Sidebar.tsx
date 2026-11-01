@@ -43,7 +43,7 @@ interface NavItem {
 
 export function Sidebar({ role }: SidebarProps) {
   const pathname = usePathname();
-  const { locale } = useLanguage();
+  const { locale, dict } = useLanguage();
 
   const getNavItems = (): NavItem[] => {
     switch (role) {
@@ -155,7 +155,7 @@ export function Sidebar({ role }: SidebarProps) {
         >
           <span className="flex items-center gap-2">
             <ExternalLink className="w-3.5 h-3.5" />
-            <span>Публичный портал</span>
+            <span>{dict.nav.publicPortal}</span>
           </span>
           <span className="font-mono text-[10px] text-[#4f4f80]">ART</span>
         </Link>
@@ -165,7 +165,7 @@ export function Sidebar({ role }: SidebarProps) {
           className="flex items-center gap-2 px-3 py-2 rounded-full text-xs text-red-400/80 hover:text-red-300 hover:bg-red-950/20 transition-colors"
         >
           <LogOut className="w-3.5 h-3.5" />
-          <span>Выйти из кабинета</span>
+          <span>{dict.nav.exitWorkspace}</span>
         </Link>
       </div>
     </aside>

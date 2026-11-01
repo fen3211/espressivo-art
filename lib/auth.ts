@@ -10,10 +10,30 @@ export interface SessionPayload {
 }
 
 export const AUTH_COOKIE_NAME = "token";
-const DEFAULT_JWT_SECRET = "espressivo-art-super-secure-jwt-secret-key-2026-production-min32chars";
+
+/**
+ * Validates the JWT_SECRET environment variable.
+ * Must be present and at least 32 characters long.
+ * Throws an error immediately in production if missing or weak.
+ */
+export function validateJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error("JWT_SECRET environment variable is missing");
+  }
+  if (secret.length < 32) {
+    throw new Error(`JWT_SECRET is insecure: minimum length is 32 characters, got ${secret.length}`);
+  }
+  return secret;
+}
+
+// In production, validate immediately at startup/module load to fail fast
+if (process.env.NODE_ENV === "production") {
+  validateJwtSecret();
+}
 
 function getSecretKey(): Uint8Array {
-  const secret = process.env.JWT_SECRET || DEFAULT_JWT_SECRET;
+  const secret = validateJwtSecret();
   return new TextEncoder().encode(secret);
 }
 

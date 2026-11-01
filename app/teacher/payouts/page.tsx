@@ -1,23 +1,26 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useLanguage } from '@/components/LanguageContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Badge } from '@/components/ui/Badge';
 import { Table, Column } from '@/components/ui/Table';
-import { Wallet, CheckCircle2, Clock } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 
 interface PayoutRow extends Record<string, unknown> {
   id: string;
   requestId: string;
   date: string;
   amount: string;
-  method: string;
+  methodRu: string;
+  methodEn: string;
   status: string;
 }
 
 export default function TeacherPayoutsPage() {
+  const { locale, dict } = useLanguage();
   const currentBalance = 12500;
   const [amount, setAmount] = useState('5000');
   const [bankDetails, setBankDetails] = useState('2200 4500 8899 4421 (Т-Банк, Иванова А.С.)');
@@ -30,7 +33,8 @@ export default function TeacherPayoutsPage() {
       requestId: 'PAY-2026-0012',
       date: '20.04.2026',
       amount: '4 000 ₽',
-      method: 'Карта *4421',
+      methodRu: 'Карта *4421',
+      methodEn: 'Bank Card *4421',
       status: 'COMPLETED',
     },
     {
@@ -38,7 +42,8 @@ export default function TeacherPayoutsPage() {
       requestId: 'PAY-2026-0005',
       date: '10.03.2026',
       amount: '3 500 ₽',
-      method: 'Карта *4421',
+      methodRu: 'Карта *4421',
+      methodEn: 'Bank Card *4421',
       status: 'COMPLETED',
     },
   ];
@@ -57,33 +62,32 @@ export default function TeacherPayoutsPage() {
   const columns: Column<PayoutRow>[] = [
     {
       key: 'requestId',
-      header: 'Номер запроса',
+      header: locale === 'ru' ? 'Номер запроса' : 'Request ID',
       render: (r) => <span className="font-mono text-xs text-[#6199f6]">{r.requestId}</span>,
     },
     {
       key: 'date',
-      header: 'Дата запроса',
+      header: dict.teacher.tableHeaders.date,
       render: (r) => <span className="text-xs text-[#757580]">{r.date}</span>,
     },
     {
       key: 'amount',
-      header: 'Сумма выплаты',
+      header: dict.admin.payouts.tableHeaders.amount,
       render: (r) => <span className="font-mono text-sm font-bold text-[#fcfcfc]">{r.amount}</span>,
     },
     {
       key: 'method',
-      header: 'Реквизиты зачисления',
-      render: (r) => <span className="text-xs text-[#dedfee]">{r.method}</span>,
+      header: dict.admin.payouts.tableHeaders.bankDetails,
+      render: (r) => (
+        <span className="text-xs text-[#dedfee]">
+          {locale === 'ru' ? r.methodRu : r.methodEn}
+        </span>
+      ),
     },
     {
       key: 'status',
-      header: 'Статус',
-      render: (r) => (
-        <Badge
-          status={r.status}
-          label={r.status === 'COMPLETED' ? 'Выплачено' : 'На проверке'}
-        />
-      ),
+      header: dict.teacher.tableHeaders.status,
+      render: (r) => <Badge status={r.status} />,
     },
   ];
 
@@ -94,10 +98,10 @@ export default function TeacherPayoutsPage() {
           PAYOUT TERMINAL
         </div>
         <h1 className="text-2xl sm:text-3xl font-medium text-[#fcfcfc]">
-          Вывод партнерских средств
+          {locale === 'ru' ? 'Вывод партнерских средств' : 'Partner Royalty Payouts'}
         </h1>
         <p className="text-xs sm:text-sm text-[#a3a3b3] mt-1">
-          Официальные выплаты преподавателям на банковские карты или расчетные счета
+          {dict.teacher.payout.modalDesc}
         </p>
       </div>
 
@@ -106,36 +110,44 @@ export default function TeacherPayoutsPage() {
         <Card padding="lg" className="md:col-span-5 flex flex-col justify-between space-y-6">
           <div>
             <span className="text-xs text-[#757580] uppercase font-mono block mb-1">
-              Доступный остаток для вывода
+              {dict.teacher.payout.availableBalance}
             </span>
             <div className="text-3xl font-mono font-bold text-[#22c55e]">
-              {currentBalance.toLocaleString('ru-RU')} ₽
+              {currentBalance.toLocaleString(locale === 'ru' ? 'ru-RU' : 'en-US')} ₽
             </div>
             <p className="text-xs text-[#a3a3b3] mt-2 leading-relaxed">
-              Выплаты обрабатываются финансовым отделом в течение 1–2 рабочих дней. Минимальная сумма вывода — 1 000 ₽.
+              {locale === 'ru'
+                ? 'Выплаты обрабатываются финансовым отделом в течение 1–2 рабочих дней. Минимальная сумма вывода — 1 000 ₽.'
+                : 'Payout requests are processed by the accounting department within 1–2 business days. Minimum payout is 1,000 ₽.'}
             </p>
           </div>
 
           <div className="p-3 rounded-[8px] bg-[#040407] border border-[#2a2a32] text-xs text-[#757580]">
-            Все выплаты сопровождаются формированием электронного фискального чека.
+            {locale === 'ru'
+              ? 'Все выплаты сопровождаются формированием электронного фискального чека.'
+              : 'All payouts are accompanied by official fiscal receipt generation.'}
           </div>
         </Card>
 
         <Card padding="lg" className="md:col-span-7">
           <form onSubmit={handleRequestPayout} className="space-y-4">
             <h2 className="text-base font-medium text-[#fcfcfc] border-b border-[#2a2a32] pb-3">
-              Новый запрос на вывод
+              {locale === 'ru' ? 'Новый запрос на вывод' : 'New Payout Request'}
             </h2>
 
             {submitted && (
               <div className="p-3 rounded-[8px] bg-[rgba(34,197,94,0.12)] border border-[rgba(34,197,94,0.4)] text-xs text-[#22c55e] flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4" />
-                <span>Запрос успешно отправлен в финансовый отдел.</span>
+                <span>
+                  {locale === 'ru'
+                    ? 'Запрос успешно отправлен в финансовый отдел.'
+                    : 'Request successfully submitted to the accounting department.'}
+                </span>
               </div>
             )}
 
             <Input
-              label="Сумма вывода (рублей)"
+              label={locale === 'ru' ? 'Сумма вывода (рублей)' : 'Payout Amount (RUB)'}
               type="number"
               min="1000"
               max={currentBalance}
@@ -145,7 +157,7 @@ export default function TeacherPayoutsPage() {
             />
 
             <Input
-              label="Реквизиты для зачисления (номер карты или расчетный счет с БИК)"
+              label={dict.teacher.payout.paymentDetailsLabel}
               required
               value={bankDetails}
               onChange={(e) => setBankDetails(e.target.value)}
@@ -159,7 +171,9 @@ export default function TeacherPayoutsPage() {
                 loading={loading}
                 type="submit"
               >
-                Отправить запрос на вывод {parseInt(amount || '0', 10).toLocaleString('ru-RU')} ₽
+                {locale === 'ru'
+                  ? `Отправить запрос на вывод ${parseInt(amount || '0', 10).toLocaleString('ru-RU')} ₽`
+                  : `Submit Payout Request ${parseInt(amount || '0', 10).toLocaleString('en-US')} ₽`}
               </Button>
             </div>
           </form>
@@ -169,9 +183,9 @@ export default function TeacherPayoutsPage() {
       {/* History */}
       <div className="space-y-4">
         <h2 className="text-lg font-medium text-[#fcfcfc]">
-          История выплат
+          {locale === 'ru' ? 'История выплат' : 'Payout History'}
         </h2>
-        <Table columns={columns} data={history} />
+        <Table columns={columns} data={history} emptyText={dict.common.emptyData} />
       </div>
     </div>
   );

@@ -5,7 +5,8 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Table, Column } from '@/components/ui/Table';
-import { Users, Search, ShieldCheck } from 'lucide-react';
+import { Search } from 'lucide-react';
+import { useLanguage } from '@/components/LanguageContext';
 
 interface UserRow extends Record<string, unknown> {
   id: string;
@@ -19,6 +20,7 @@ interface UserRow extends Record<string, unknown> {
 }
 
 export default function AdminUsersPage() {
+  const { dict } = useLanguage();
   const [roleFilter, setRoleFilter] = useState('ALL');
   const [search, setSearch] = useState('');
 
@@ -28,7 +30,7 @@ export default function AdminUsersPage() {
       fullName: 'Алексеева Елена Викторовна',
       email: 'elena.singer@example.com',
       role: 'PARTICIPANT',
-      roleLabel: 'Участник / Родитель',
+      roleLabel: dict.common.participant,
       status: 'ACTIVE',
       extraInfo: '2 заявки в сезоне',
       createdAt: '12.05.2026',
@@ -38,7 +40,7 @@ export default function AdminUsersPage() {
       fullName: 'Иванова Анна Сергеевна',
       email: 'anna.ivanova@music-school.ru',
       role: 'TEACHER',
-      roleLabel: 'Преподаватель (20%)',
+      roleLabel: dict.common.teacher,
       status: 'ACTIVE',
       extraInfo: 'Код: IVANOVA-VOCAL • 14 учеников',
       createdAt: '10.04.2026',
@@ -48,7 +50,7 @@ export default function AdminUsersPage() {
       fullName: 'Проф. Вальтер Кауфманн',
       email: 'w.kaufmann@vienna-opera.at',
       role: 'JURY',
-      roleLabel: 'Председатель жюри',
+      roleLabel: dict.common.jury,
       status: 'ACTIVE',
       extraInfo: 'Венская государственная опера',
       createdAt: '01.03.2026',
@@ -58,7 +60,7 @@ export default function AdminUsersPage() {
       fullName: 'Елена Беллелли',
       email: 'e.bellelli@conservatoriomilano.it',
       role: 'JURY',
-      roleLabel: 'Член жюри',
+      roleLabel: dict.common.jury,
       status: 'ACTIVE',
       extraInfo: 'Консерватория Милана',
       createdAt: '05.03.2026',
@@ -68,7 +70,7 @@ export default function AdminUsersPage() {
       fullName: 'Главный Администратор',
       email: 'admin@espressivo-art.com',
       role: 'ADMIN',
-      roleLabel: 'Супер-администратор',
+      roleLabel: dict.common.admin,
       status: 'ACTIVE',
       extraInfo: 'Полный доступ (Root)',
       createdAt: '01.01.2026',
@@ -86,7 +88,7 @@ export default function AdminUsersPage() {
   const columns: Column<UserRow>[] = [
     {
       key: 'fullName',
-      header: 'Пользователь',
+      header: dict.admin.users.tableHeaders.name,
       render: (r) => (
         <div>
           <div className="font-medium text-[#fcfcfc]">{r.fullName}</div>
@@ -96,7 +98,7 @@ export default function AdminUsersPage() {
     },
     {
       key: 'role',
-      header: 'Роль в системе',
+      header: dict.admin.users.tableHeaders.role,
       render: (r) => (
         <span
           className={`px-2.5 py-0.5 rounded-full text-xs font-mono font-medium ${
@@ -115,17 +117,17 @@ export default function AdminUsersPage() {
     },
     {
       key: 'extraInfo',
-      header: 'Детали профиля',
+      header: dict.admin.users.tableHeaders.profileDetails,
       render: (r) => <span className="text-xs text-[#dedfee]">{r.extraInfo}</span>,
     },
     {
       key: 'status',
-      header: 'Статус аккаунта',
-      render: () => <Badge status="COMPLETED" label="Активен" />,
+      header: dict.admin.users.tableHeaders.status,
+      render: () => <Badge status="COMPLETED" label={dict.admin.users.statusActive} />,
     },
     {
       key: 'createdAt',
-      header: 'Дата регистрации',
+      header: dict.admin.users.tableHeaders.registeredAt,
       render: (r) => <span className="text-xs text-[#757580]">{r.createdAt}</span>,
     },
   ];
@@ -134,24 +136,24 @@ export default function AdminUsersPage() {
     <div className="space-y-6 font-sans">
       <div className="border-b border-[#2a2a32] pb-6">
         <div className="text-[11px] font-mono uppercase tracking-wider text-[#6199f6] mb-1">
-          USER ADMINISTRATION
+          {dict.admin.users.tag}
         </div>
         <h1 className="text-2xl sm:text-3xl font-medium text-[#fcfcfc]">
-          Пользователи и роли платформы
+          {dict.admin.users.title}
         </h1>
         <p className="text-xs sm:text-sm text-[#a3a3b3] mt-1">
-          Управление правами доступа участников, преподавателей, жюри и администраторов
+          {dict.admin.users.subtitle}
         </p>
       </div>
 
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-[#08080c] p-3 rounded-[10px] border border-[#2a2a32]">
         <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto">
           {[
-            { id: 'ALL', label: 'Все пользователи' },
-            { id: 'PARTICIPANT', label: 'Участники' },
-            { id: 'TEACHER', label: 'Преподаватели' },
-            { id: 'JURY', label: 'Жюри' },
-            { id: 'ADMIN', label: 'Администрация' },
+            { id: 'ALL', label: dict.admin.users.filterAll },
+            { id: 'PARTICIPANT', label: dict.admin.users.filterParticipants },
+            { id: 'TEACHER', label: dict.admin.users.filterTeachers },
+            { id: 'JURY', label: dict.admin.users.filterJury },
+            { id: 'ADMIN', label: dict.admin.users.filterAdmins },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -173,7 +175,7 @@ export default function AdminUsersPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Поиск по имени или email..."
+            placeholder={dict.admin.users.searchPlaceholder}
             className="w-full h-9 pl-9 pr-3 rounded-full bg-[#040407] border border-[#2a2a32] text-xs text-[#fcfcfc] placeholder:text-[#757580] focus:outline-none focus:border-[#6199f6]"
           />
         </div>

@@ -46,7 +46,7 @@ describe("Comprehensive API Routes Integration Suite", () => {
 
     testCompetitionId = comp.id;
     testNominationId = comp.nominations[0].id;
-    testAgeCategoryId = comp.ageCategories[0].id;
+    testAgeCategoryId = comp.ageCategories.find((c) => c.code === "CAT_B")?.id || comp.ageCategories[0].id;
 
     adminToken = await createSessionToken({
       userId: admin.id,
@@ -222,6 +222,118 @@ describe("Comprehensive API Routes Integration Suite", () => {
     expect(body.application.code).toMatch(/^EXP-2026-\d{4}$/);
     expect(body.application.status).toBe("DRAFT");
     expect(body.application.referralTeacherId).toBeDefined();
+  });
+
+  it("POST /api/applications should reject if participant age does not fit category (INVALID_AGE_FOR_CATEGORY)", async () => {
+    // Participant born in 2005 is 20-21 in 2026, which does NOT fit CAT_B (9-12 years)
+    const req = new Request("http://localhost:3000/api/applications", {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${participantToken}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        competitionId: testCompetitionId,
+        nominationId: testNominationId,
+        ageCategoryId: testAgeCategoryId, // CAT_B (9-12)
+        participantName: "Взрослый Участник",
+        birthDate: "2005-01-01",
+        repertoire: "Романс",
+        videoUrl: "https://www.youtube.com/watch?v=adult",
+        parentFullName: "Родитель",
+        parentEmail: "parent@test.art",
+        parentPhone: "+7 (999) 111-22-33",
+        consentDataProcess: true,
+        consentPublicStream: true,
+      }),
+    });
+
+    const res = await postApplication(req);
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.code).toBe("INVALID_AGE_FOR_CATEGORY");
+    expect(body.error).toContain("INVALID_AGE_FOR_CATEGORY");
+  });
+
+  it("POST /api/applications should reject if nomination belongs to another competition", async () => {
+    // Create another competition and nomination
+    const otherComp = await prisma.competition.create({
+      data: {
+        slug: `other-comp-${Date.now()}`,
+        titleRu: "Другой конкурс",
+        titleEn: "Other Contest",
+        descriptionRu: "Описание",
+        descriptionEn: "Description",
+        startDate: new Date("2026-03-01"),
+        endDate: new Date("2026-07-01"),
+        judgingEndDate: new Date("2026-07-15"),
+      },
+    });
+
+    const foreignNom = await prisma.nomination.create({
+      data: {
+        competitionId: otherComp.id,
+        code: "FOREIGN_NOM",
+        titleRu: "Чужая номинация",
+        titleEn: "Foreign Nomination",
+      },
+    });
+
+    const req = new Request("http://localhost:3000/api/applications", {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${participantToken}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        competitionId: testCompetitionId,
+        nominationId: foreignNom.id, // Does not belong to testCompetitionId!
+        ageCategoryId: testAgeCategoryId,
+        participantName: "Тест Чужой Номинации",
+        birthDate: "2014-01-01",
+        repertoire: "Песня",
+        videoUrl: "https://youtube.com/watch?v=test",
+        parentFullName: "Родитель",
+        parentEmail: "p@test.art",
+        parentPhone: "+7 (999) 000-00-00",
+        consentDataProcess: true,
+        consentPublicStream: true,
+      }),
+    });
+
+    const res = await postApplication(req);
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.code).toBe("INVALID_NOMINATION");
+  });
+
+  it("POST /api/applications should accept application when consentPublicStream is false", async () => {
+    const req = new Request("http://localhost:3000/api/applications", {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${participantToken}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        competitionId: testCompetitionId,
+        nominationId: testNominationId,
+        ageCategoryId: testAgeCategoryId,
+        participantName: "Приватный Участник",
+        birthDate: "2014-06-01",
+        repertoire: "Песня",
+        videoUrl: "https://youtube.com/watch?v=private",
+        parentFullName: "Родитель Приватного",
+        parentEmail: "private@test.art",
+        parentPhone: "+7 (999) 555-55-55",
+        consentDataProcess: true,
+        consentPublicStream: false,
+      }),
+    });
+
+    const res = await postApplication(req);
+    expect(res.status).toBe(201);
+    const body = await res.json();
+    expect(body.application.consentPublicStream).toBe(false);
   });
 
   // 4. Teacher dashboard & payouts

@@ -2,25 +2,31 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useLanguage } from '@/components/LanguageContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Table, Column } from '@/components/ui/Table';
-import { Play, EyeOff, Eye, Search, Filter } from 'lucide-react';
+import { Play, EyeOff, Eye, Search } from 'lucide-react';
 
 interface JuryQueueRow extends Record<string, unknown> {
   id: string;
   code: string;
-  participantMasked: string;
-  participantReal: string;
-  nomination: string;
-  category: string;
+  participantMaskedRu: string;
+  participantMaskedEn: string;
+  participantRealRu: string;
+  participantRealEn: string;
+  nominationRu: string;
+  nominationEn: string;
+  categoryRu: string;
+  categoryEn: string;
   repertoire: string;
   duration: string;
   status: string;
 }
 
 export default function JuryApplicationsQueuePage() {
+  const { locale, dict } = useLanguage();
   const [blindMode, setBlindMode] = useState<boolean>(true);
   const [filter, setFilter] = useState<string>('ALL');
   const [search, setSearch] = useState<string>('');
@@ -29,32 +35,44 @@ export default function JuryApplicationsQueuePage() {
     {
       id: 'app-001',
       code: 'EXP-2026-0042',
-      participantMasked: 'Кандидат #0042 (Анонимно)',
-      participantReal: 'Алексеева София (ДШИ им. Чайковского)',
-      nomination: 'Академический вокал (Соло)',
-      category: 'Группа II (12–14 лет)',
-      repertoire: 'Дж. Перголези — Канцона "Se tu m\'ami"',
+      participantMaskedRu: 'Кандидат #0042 (Анонимно)',
+      participantMaskedEn: 'Candidate #0042 (Anonymous)',
+      participantRealRu: 'Алексеева София (ДШИ им. Чайковского)',
+      participantRealEn: 'Sofia Alekseeva (Tchaikovsky Music School)',
+      nominationRu: 'Академический вокал (Соло)',
+      nominationEn: 'Academic Vocal (Solo)',
+      categoryRu: 'Группа II (12–14 лет)',
+      categoryEn: 'Group II (12–14 yrs)',
+      repertoire: "G. Pergolesi — Canzona \"Se tu m'ami\"",
       duration: '3:30',
       status: 'UNDER_REVIEW',
     },
     {
       id: 'app-003',
       code: 'EXP-2026-0155',
-      participantMasked: 'Кандидат #0155 (Анонимно)',
-      participantReal: 'Екатерина Морозова (МГДМШ им. Гнесиных)',
-      nomination: 'Джазовый вокал',
-      category: 'Группа I (9–11 лет)',
-      repertoire: 'Дж. Гершвин — "Summertime"',
+      participantMaskedRu: 'Кандидат #0155 (Анонимно)',
+      participantMaskedEn: 'Candidate #0155 (Anonymous)',
+      participantRealRu: 'Екатерина Морозова (МГДМШ им. Гнесиных)',
+      participantRealEn: 'Ekaterina Morozova (Gnessin Music School)',
+      nominationRu: 'Джазовый вокал',
+      nominationEn: 'Jazz Vocal',
+      categoryRu: 'Группа I (9–11 лет)',
+      categoryEn: 'Group I (9–11 yrs)',
+      repertoire: 'G. Gershwin — "Summertime"',
       duration: '4:10',
       status: 'UNDER_REVIEW',
     },
     {
       id: 'app-004',
       code: 'EXP-2026-0201',
-      participantMasked: 'Кандидат #0201 (Анонимно)',
-      participantReal: 'Артур Вартанян (Ереванская спец. муз. школа)',
-      nomination: 'Эстрадный вокал (Соло)',
-      category: 'Группа III (15–17 лет)',
+      participantMaskedRu: 'Кандидат #0201 (Анонимно)',
+      participantMaskedEn: 'Candidate #0201 (Anonymous)',
+      participantRealRu: 'Артур Вартанян (Ереванская спец. муз. школа)',
+      participantRealEn: 'Artur Vardanyan (Yerevan Music School)',
+      nominationRu: 'Эстрадный вокал (Соло)',
+      nominationEn: 'Pop & Contemporary Vocal (Solo)',
+      categoryRu: 'Группа III (15–17 лет)',
+      categoryEn: 'Group III (15–17 yrs)',
       repertoire: 'F. Mercury — "Somebody to Love"',
       duration: '4:15',
       status: 'UNDER_REVIEW',
@@ -62,11 +80,15 @@ export default function JuryApplicationsQueuePage() {
     {
       id: 'app-002',
       code: 'EXP-2026-0089',
-      participantMasked: 'Кандидат #0089',
-      participantReal: 'Алексеева София',
-      nomination: 'Эстрадный вокал (Соло)',
-      category: 'Группа II (12–14 лет)',
-      repertoire: 'И. Крутой — "Любовь, похожая на сон"',
+      participantMaskedRu: 'Кандидат #0089',
+      participantMaskedEn: 'Candidate #0089',
+      participantRealRu: 'Алексеева София',
+      participantRealEn: 'Sofia Alekseeva',
+      nominationRu: 'Эстрадный вокал (Соло)',
+      nominationEn: 'Pop & Contemporary Vocal (Solo)',
+      categoryRu: 'Группа II (12–14 лет)',
+      categoryEn: 'Group II (12–14 yrs)',
+      repertoire: 'I. Krutoy — "Love Resembling a Dream"',
       duration: '3:45',
       status: 'EVALUATED',
     },
@@ -84,49 +106,54 @@ export default function JuryApplicationsQueuePage() {
   const columns: Column<JuryQueueRow>[] = [
     {
       key: 'code',
-      header: 'Шифр заявки',
+      header: dict.jury.tableHeaders.entryCode,
       render: (r) => <span className="font-mono text-xs font-semibold text-[#6199f6]">{r.code}</span>,
     },
     {
       key: 'participant',
-      header: 'Участник',
+      header: locale === 'ru' ? 'Участник' : 'Participant',
       render: (r) => (
         <div>
           <div className="font-medium text-[#fcfcfc]">
-            {blindMode ? r.participantMasked : r.participantReal}
+            {blindMode
+              ? (locale === 'ru' ? r.participantMaskedRu : r.participantMaskedEn)
+              : (locale === 'ru' ? r.participantRealRu : r.participantRealEn)}
           </div>
-          <div className="text-xs text-[#757580]">{r.category}</div>
+          <div className="text-xs text-[#757580]">
+            {locale === 'ru' ? r.categoryRu : r.categoryEn}
+          </div>
         </div>
       ),
     },
     {
       key: 'repertoire',
-      header: 'Исполняемое произведение',
+      header: locale === 'ru' ? 'Исполняемое произведение' : 'Repertoire',
       render: (r) => (
         <div>
           <div className="text-sm text-[#dedfee] font-medium">{r.repertoire}</div>
-          <div className="text-xs text-[#757580]">{r.nomination}</div>
+          <div className="text-xs text-[#757580]">
+            {locale === 'ru' ? r.nominationRu : r.nominationEn}
+          </div>
         </div>
       ),
     },
     {
       key: 'duration',
-      header: 'Хронометраж',
-      render: (r) => <span className="font-mono text-xs text-[#a3a3b3]">{r.duration} мин</span>,
-    },
-    {
-      key: 'status',
-      header: 'Статус',
+      header: dict.jury.tableHeaders.duration,
       render: (r) => (
-        <Badge
-          status={r.status}
-          label={r.status === 'UNDER_REVIEW' ? 'Требует оценки' : 'Оценено'}
-        />
+        <span className="font-mono text-xs text-[#a3a3b3]">
+          {r.duration} {locale === 'ru' ? 'мин' : 'min'}
+        </span>
       ),
     },
     {
+      key: 'status',
+      header: dict.jury.tableHeaders.status,
+      render: (r) => <Badge status={r.status} />,
+    },
+    {
       key: 'actions',
-      header: 'Действия',
+      header: dict.jury.tableHeaders.action,
       align: 'right',
       render: (r) => (
         <Link href={`/jury/applications/${r.id}`}>
@@ -135,7 +162,9 @@ export default function JuryApplicationsQueuePage() {
             size="sm"
             iconLeft={<Play className="w-3.5 h-3.5" />}
           >
-            {r.status === 'UNDER_REVIEW' ? 'Судейство' : 'Пересмотр'}
+            {r.status === 'UNDER_REVIEW'
+              ? (locale === 'ru' ? 'Судейство' : 'Adjudicate')
+              : (locale === 'ru' ? 'Пересмотр' : 'Review')}
           </Button>
         </Link>
       ),
@@ -151,10 +180,12 @@ export default function JuryApplicationsQueuePage() {
             QUEUE MANAGEMENT // 100 PTS RUBRIC
           </div>
           <h1 className="text-2xl sm:text-3xl font-medium text-[#fcfcfc]">
-            Очередь оценивания конкурсных работ
+            {locale === 'ru' ? 'Очередь оценивания конкурсных работ' : 'Adjudication Queue'}
           </h1>
           <p className="text-xs sm:text-sm text-[#a3a3b3] mt-1">
-            Выберите выступление для перехода в кинематографичный видеотерминал жюри
+            {locale === 'ru'
+              ? 'Выберите выступление для перехода в кинематографичный видеотерминал жюри'
+              : 'Select an entry to open the cinematic jury terminal'}
           </p>
         </div>
 
@@ -169,7 +200,11 @@ export default function JuryApplicationsQueuePage() {
           }`}
         >
           {blindMode ? <EyeOff className="w-4 h-4 text-[#6199f6]" /> : <Eye className="w-4 h-4" />}
-          <span>{blindMode ? 'Слепой протокол: ВКЛЮЧЕН' : 'Личные данные: ВИДИМЫ'}</span>
+          <span>
+            {blindMode
+              ? (locale === 'ru' ? 'Слепой протокол: ВКЛЮЧЕН' : 'Blind Protocol: ACTIVE')
+              : (locale === 'ru' ? 'Личные данные: ВИДИМЫ' : 'Personal Data: VISIBLE')}
+          </span>
         </button>
       </div>
 
@@ -177,9 +212,9 @@ export default function JuryApplicationsQueuePage() {
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 bg-[#08080c] p-3 rounded-[10px] border border-[#2a2a32]">
         <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto">
           {[
-            { id: 'ALL', label: 'Все заявки' },
-            { id: 'PENDING', label: 'Ожидают оценки' },
-            { id: 'EVALUATED', label: 'Завершенные' },
+            { id: 'ALL', label: dict.common.all },
+            { id: 'PENDING', label: locale === 'ru' ? 'Ожидают оценки' : 'Pending Evaluation' },
+            { id: 'EVALUATED', label: locale === 'ru' ? 'Завершенные' : 'Completed' },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -201,13 +236,21 @@ export default function JuryApplicationsQueuePage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Поиск по произведению или шифру..."
+            placeholder={
+              locale === 'ru'
+                ? 'Поиск по произведению или шифру...'
+                : 'Search by piece or code...'
+            }
             className="w-full h-9 pl-9 pr-3 rounded-full bg-[#040407] border border-[#2a2a32] text-xs text-[#fcfcfc] placeholder:text-[#757580] focus:outline-none focus:border-[#6199f6]"
           />
         </div>
       </div>
 
-      <Table columns={columns} data={filtered} />
+      <Table
+        columns={columns}
+        data={filtered}
+        emptyText={dict.jury.emptyQueueTitle}
+      />
     </div>
   );
 }

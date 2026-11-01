@@ -2,6 +2,8 @@
 
 import React from 'react';
 
+import { useLanguage } from '@/components/LanguageContext';
+
 export type BadgeStatus =
   | 'DRAFT'
   | 'SUBMITTED'
@@ -27,10 +29,18 @@ export interface BadgeProps {
 }
 
 export function Badge({ status, label, theme = 'cinema', className = '' }: BadgeProps) {
+  let langContext: ReturnType<typeof useLanguage> | null = null;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    langContext = useLanguage();
+  } catch {
+    // Fallback if rendered outside of LanguageProvider
+  }
+
   const norm = status.toUpperCase();
 
   // Labels dictionary fallback
-  const defaultLabels: Record<string, string> = {
+  const defaultLabelsRu: Record<string, string> = {
     DRAFT: 'Черновик',
     SUBMITTED: 'Отправлена',
     PAYMENT_PENDING: 'Ожидает оплаты',
@@ -39,6 +49,11 @@ export function Badge({ status, label, theme = 'cinema', className = '' }: Badge
     EVALUATED: 'Оценена',
     COMPLETED: 'Завершена',
     REJECTED: 'Отклонена',
+    PENDING: 'Ожидает рассмотрения',
+    APPROVED: 'Одобрено',
+    ACTIVE: 'Активен',
+    OPEN: 'Приём заявок',
+    UPCOMING: 'Анонс',
     GRAND_PRIX: 'Гран-при',
     LAUREATE_1: 'Лауреат I ст.',
     LAUREATE_2: 'Лауреат II ст.',
@@ -47,7 +62,46 @@ export function Badge({ status, label, theme = 'cinema', className = '' }: Badge
     PARTICIPANT: 'Участник',
   };
 
-  const displayText = label || defaultLabels[norm] || status;
+  const defaultLabelsEn: Record<string, string> = {
+    DRAFT: 'Draft',
+    SUBMITTED: 'Submitted',
+    PAYMENT_PENDING: 'Pending Payment',
+    PAID: 'Paid',
+    UNDER_REVIEW: 'Under Review',
+    EVALUATED: 'Evaluated',
+    COMPLETED: 'Completed',
+    REJECTED: 'Rejected',
+    PENDING: 'Pending',
+    APPROVED: 'Approved',
+    ACTIVE: 'Active',
+    OPEN: 'Open',
+    UPCOMING: 'Announced',
+    GRAND_PRIX: 'Grand Prix',
+    LAUREATE_1: '1st Degree Laureate',
+    LAUREATE_2: '2nd Degree Laureate',
+    LAUREATE_3: '3rd Degree Laureate',
+    DIPLOMANT: 'Diplomant',
+    PARTICIPANT: 'Participant',
+  };
+
+  const locale = langContext?.locale || 'ru';
+  const dict = langContext?.dict;
+
+  let localizedDefault: string | undefined;
+  if (dict) {
+    localizedDefault =
+      (dict.statuses as Record<string, string>)[norm] ||
+      (dict.awards as Record<string, string>)[norm];
+  }
+  if (!localizedDefault) {
+    localizedDefault = locale === 'en' ? defaultLabelsEn[norm] : defaultLabelsRu[norm];
+  }
+
+  // If label is passed, but we are in English and the passed label is in Russian, override with localizedDefault
+  let displayText = label;
+  if (!displayText || (locale === 'en' && label && (defaultLabelsRu[norm] === label || Object.values(defaultLabelsRu).includes(label)))) {
+    displayText = localizedDefault || status;
+  }
 
   if (theme === 'art') {
     return (

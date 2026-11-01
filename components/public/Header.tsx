@@ -82,7 +82,7 @@ export function Header() {
 
           <Link href="/register">
             <Button variant="solid-ink" size="sm">
-              {locale === 'ru' ? 'Подать заявку' : 'Apply Now'}
+              {t('common.applyNow')}
             </Button>
           </Link>
         </div>
@@ -91,7 +91,7 @@ export function Header() {
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           className="lg:hidden flex flex-col justify-center items-center w-8 h-8 gap-1.5 cursor-pointer"
-          aria-label="Меню навигации"
+          aria-label={locale === 'ru' ? 'Меню навигации' : 'Navigation Menu'}
         >
           <span
             className={`w-5 h-[1.5px] bg-[#000000] transition-transform duration-200 ${
@@ -152,7 +152,7 @@ export function Header() {
 
           <Link href="/register" onClick={() => setMobileMenuOpen(false)} className="w-full">
             <Button variant="solid-ink" fullWidth size="md">
-              {locale === 'ru' ? 'Подать заявку' : 'Apply Now'}
+              {t('common.applyNow')}
             </Button>
           </Link>
         </div>

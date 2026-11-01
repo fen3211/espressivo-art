@@ -13,6 +13,11 @@ build/
 dist/
 *.tsbuildinfo
 
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+
 # Environment Variables
 .env
 .env.local

@@ -98,8 +98,10 @@
 | **Стилизация** | Tailwind CSS + PostCSS, CSS-переменные для изоляции `[data-theme]` |
 | **База данных** | SQLite (WAL mode) / PostgreSQL-ready via **Prisma ORM 6.4** |
 | **Аутентификация** | HttpOnly Cookie сессии (JWT HS256 via `jose`, хэширование паролей via `bcryptjs`) |
-| **Генерация PDF** | Векторный движок `pdfkit` |
-| **Тестирование** | Vitest 3.0 (51 passed тест: авторизация, финансы, RBAC, 152-ФЗ, IDOR) |
+| **Генерация PDF & QR** | Векторный движок `pdfkit` + генератор реальных QR-кодов `qrcode` |
+| **Локализация** | Синхронная система словарей `lib/i18n/dictionaries.ts` (13 разделов, 513 ключей на язык, RU/EN) |
+| **Юридический комплаенс** | Полный аудит 152-ФЗ, 156-ФЗ, 69-ФЗ, 54-ФЗ, 422-ФЗ и GDPR Art. 8 в каталоге `docs/legal/` |
+| **Тестирование** | Vitest 3.0 (70 passed тестов: авторизация, финансы, RBAC, 152-ФЗ, IDOR, i18n parity, QR PDF) |
 | **Иконки** | Lucide React |
 
 ---
@@ -161,13 +163,13 @@
 ```bash
 npm test
 ```
-*Результат: 51 тест в 6 тестовых сьютах (Auth, Ledger 20%, Jury PII Isolation, Certificates PDF, API Routes, Security Audit) выполняется за ~1.4 сек.*
+*Результат: 70 тестов в 7 тестовых сьютах (Auth, Ledger 20%, Jury PII Isolation, Certificates PDF & QR, API Routes, Security Audit & RBAC, i18n Key Parity) выполняется за ~4.3 сек.*
 
 ### Сборка в production-режим
 ```bash
 npm run build
 ```
-*Результат: Успешная сборка всех 48 статических и динамических маршрутов Next.js без ошибок типизации.*
+*Результат: Успешная сборка всех 49 статических и динамических маршрутов Next.js без ошибок типизации.*
 
 ---
 
