@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { EyeOff, Eye, ShieldCheck, AlertCircle, ExternalLink } from 'lucide-react';
+import { EyeOff, Eye, ShieldCheck, AlertCircle, ExternalLink, Volume2 } from 'lucide-react';
 import { useLanguage } from '@/components/LanguageContext';
 
 export interface ProtectedVideoPlayerProps {
@@ -16,7 +16,7 @@ export function ProtectedVideoPlayer({
   videoUrl,
   title,
   participantCode,
-  isBlindMode = false,
+  isBlindMode = true,
   className = '',
 }: ProtectedVideoPlayerProps) {
   let langContext: ReturnType<typeof useLanguage> | null = null;
@@ -29,8 +29,12 @@ export function ProtectedVideoPlayer({
 
   const locale = langContext?.locale || 'ru';
   const dict = langContext?.dict;
-  const defaultTitle = dict?.jury.terminal.videoPlayerTitle || (locale === 'ru' ? 'Конкурсное выступление' : 'Competition Performance');
+  const defaultTitle =
+    dict?.jury.terminal.videoPlayerTitle ||
+    (locale === 'ru' ? 'Конкурсное выступление' : 'Competition Performance');
   const resolvedTitle = title || defaultTitle;
+
+  // Blind audition is ON by default
   const [isAudioOnly, setIsAudioOnly] = useState<boolean>(isBlindMode);
   const [hasError, setHasError] = useState<boolean>(false);
 
@@ -97,7 +101,7 @@ export function ProtectedVideoPlayer({
             {participantCode ? `ENTRY // ${participantCode}` : 'PROTECTED MEDIA'}
           </span>
           <span className="text-[#757580] hidden sm:inline">
-            {locale === 'ru' ? '• Защищённый просмотр жюри' : '• Protected Jury Stream'}
+            {locale === 'ru' ? '• Слепое судейство жюри' : '• Protected Blind Stream'}
           </span>
         </div>
 
@@ -106,22 +110,29 @@ export function ProtectedVideoPlayer({
           <button
             type="button"
             onClick={() => setIsAudioOnly(!isAudioOnly)}
-            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all ${
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all cursor-pointer ${
               isAudioOnly
-                ? 'bg-[#6199f6] text-[#0a0a13]'
+                ? 'bg-[#6199f6] text-[#0a0a13] font-semibold'
                 : 'bg-[#181826] text-[#dedfee] hover:bg-[#2a2a32] border border-[#4f4f80]'
             }`}
-            title={locale === 'ru' ? 'Режим слепого прослушивания (скрыть видео)' : 'Blind Audition Mode (hide video)'}
+            title={
+              locale === 'ru'
+                ? 'Режим объективного оценивания (скрыть видеоряд, воспроизводить только аудио)'
+                : 'Objective blind mode (hide visual stream, play audio only)'
+            }
           >
             {isAudioOnly ? (
               <>
                 <EyeOff className="w-3.5 h-3.5" />
-                <span>{dict?.jury.blindModeActive || (locale === 'ru' ? 'Слепое прослушивание: ВКЛ' : 'Blind Audition: ON')}</span>
+                <span>
+                  {dict?.jury.blindModeActive ||
+                    (locale === 'ru' ? 'Слепое прослушивание: ВКЛ' : 'Blind Audition: ON')}
+                </span>
               </>
             ) : (
               <>
                 <Eye className="w-3.5 h-3.5" />
-                <span>{locale === 'ru' ? 'Скрыть видеоряд' : 'Hide video'}</span>
+                <span>{locale === 'ru' ? 'Скрыть видеоряд' : 'Hide Video Stream'}</span>
               </>
             )}
           </button>
@@ -131,15 +142,16 @@ export function ProtectedVideoPlayer({
       {/* Video Viewport */}
       <div className="relative aspect-video w-full bg-[#000000] flex items-center justify-center overflow-hidden">
         {hasError ? (
-          <div className="flex flex-col items-center justify-center p-6 text-center text-[#ef4444]">
+          <div className="flex flex-col items-center justify-center p-6 text-center text-[#ef4444] z-30">
             <AlertCircle className="w-10 h-10 mb-2 opacity-80" />
             <p className="text-sm font-medium">
-              {dict?.errors.videoLoadFailed || (locale === 'ru' ? 'Не удалось загрузить видео' : 'Failed to load video')}
+              {dict?.errors.videoLoadFailed ||
+                (locale === 'ru' ? 'Не удалось загрузить видео' : 'Failed to load video')}
             </p>
             <p className="text-xs text-[#757580] mt-1 mb-4">
               {locale === 'ru'
-                ? 'Возможно, видео имеет ограниченный доступ или ссылка устарела.'
-                : 'The video may be private, restricted, or the link has expired.'}
+                ? 'Возможно, видео имеет ограниченный доступ или ссылка недоступна.'
+                : 'The video may be restricted, private, or temporarily unavailable.'}
             </p>
             <a
               href={videoUrl}
@@ -151,53 +163,64 @@ export function ProtectedVideoPlayer({
               <ExternalLink className="w-3 h-3" />
             </a>
           </div>
-        ) : isAudioOnly ? (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-b from-[#0a0a13] to-[#040407] p-8 text-center">
-            <div className="w-16 h-16 rounded-full bg-[rgba(97,153,246,0.12)] border border-[#6199f6] flex items-center justify-center mb-4 text-[#6199f6] animate-pulse">
-              <EyeOff className="w-8 h-8" />
-            </div>
-            <h4 className="text-base font-medium text-[#fcfcfc] mb-1">
-              {locale === 'ru' ? 'Режим объективного оценивания' : 'Objective Evaluation Mode'}
-            </h4>
-            <p className="text-xs text-[#a3a3b3] max-w-md mb-4">
-              {locale === 'ru'
-                ? 'Видеоряд скрыт для исключения визуальной предвзятости. Оценивайте технику, интонацию и вокальное мастерство только на слух.'
-                : 'Video is hidden to eliminate visual bias. Please evaluate technique, intonation, and vocal mastery by audio only.'}
-            </p>
-            <button
-              type="button"
-              onClick={() => setIsAudioOnly(false)}
-              className="text-xs text-[#6199f6] hover:underline flex items-center gap-1"
-            >
-              <Eye className="w-3.5 h-3.5" />
-              <span>{locale === 'ru' ? 'Показать видеоряд' : 'Show video'}</span>
-            </button>
-          </div>
-        ) : embedInfo.type === 'direct' ? (
-          <video
-            src={embedInfo.url}
-            controls
-            controlsList="nodownload"
-            className="w-full h-full object-contain"
-            onError={() => setHasError(true)}
-          />
-        ) : embedInfo.url ? (
-          <iframe
-            src={embedInfo.url}
-            title={resolvedTitle}
-            className="w-full h-full border-0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-            onError={() => setHasError(true)}
-          />
-        ) : (
+        ) : !embedInfo.url ? (
           <div className="text-xs text-[#757580]">
             {locale === 'ru' ? 'Видео недоступно' : 'Video unavailable'}
           </div>
+        ) : (
+          <>
+            {/* Underlying media element continues playing audio in all modes */}
+            {embedInfo.type === 'direct' ? (
+              <video
+                src={embedInfo.url}
+                controls
+                controlsList="nodownload"
+                className="w-full h-full object-contain"
+                onError={() => setHasError(true)}
+              />
+            ) : (
+              <iframe
+                src={embedInfo.url}
+                title={resolvedTitle}
+                className="w-full h-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                onError={() => setHasError(true)}
+              />
+            )}
+
+            {/* Blind Audition Audio-Only Overlay Curtain:
+                Completely occludes video visually while allowing underlying audio playback */}
+            {isAudioOnly && (
+              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-gradient-to-b from-[#0a0a13] via-[#06060a] to-[#040407] p-8 text-center select-none">
+                <div className="w-16 h-16 rounded-full bg-[rgba(97,153,246,0.12)] border border-[#6199f6] flex items-center justify-center mb-4 text-[#6199f6] animate-pulse">
+                  <Volume2 className="w-8 h-8" />
+                </div>
+                <h4 className="text-base font-medium text-[#fcfcfc] mb-1">
+                  {locale === 'ru'
+                    ? 'Слепое прослушивание: Аудиорежим активен'
+                    : 'Blind Audition: Audio Mode Active'}
+                </h4>
+                <p className="text-xs text-[#a3a3b3] max-w-md mb-4 leading-relaxed">
+                  {locale === 'ru'
+                    ? 'Видеоряд затемнен для исключения визуальной предвзятости. Оценивайте интонацию, вокальную технику и музыкальность исключительно на слух.'
+                    : 'Visual stream is concealed to prevent bias. Please evaluate pitch, vocal technique, and musicianship purely by sound.'}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setIsAudioOnly(false)}
+                  className="text-xs text-[#6199f6] hover:underline flex items-center gap-1.5 cursor-pointer px-3 py-1.5 rounded-lg bg-[rgba(97,153,246,0.1)] border border-[#6199f6]/30"
+                >
+                  <Eye className="w-3.5 h-3.5" />
+                  <span>{locale === 'ru' ? 'Показать видеоряд' : 'Reveal Video Stream'}</span>
+                </button>
+              </div>
+            )}
+          </>
         )}
 
         {/* Dynamic Security Watermark */}
-        <div className="absolute bottom-3 right-3 pointer-events-none select-none opacity-40 text-[10px] font-mono text-[#dedfee] bg-[#000000]/60 px-2 py-0.5 rounded border border-[#2a2a32]">
+        <div className="absolute bottom-3 right-3 pointer-events-none select-none opacity-40 text-[10px] font-mono text-[#dedfee] bg-[#000000]/60 px-2 py-0.5 rounded border border-[#2a2a32] z-25">
           espressivo ART • Private Stream {participantCode ? `• ${participantCode}` : ''}
         </div>
       </div>
