@@ -197,5 +197,21 @@
   13. `checkout` — оформление оплаты регистрационного взноса.
 
 ---
+## 6. Итоги спринта критических исправлений (Sprint 2 Remediation)
+
+В рамках ревизии `fix/security-checkout-i18n-jury-privacy`:
+1. **Полная локализация Mock Checkout (`app/checkout/mock/MockCheckoutClient.tsx`):**
+   - Устранены все захардкоженные русские строки.
+   - Подключен словарь `checkout.*` (`checkout.step`, `checkout.paymentPendingNote`, `checkout.payButton`, `checkout.backToDashboard`, и др.).
+   - Форматирование валют и дат адаптировано под выбранный язык (`ru-RU` vs `en-US`).
+2. **Локализация публичной верификации дипломов (`app/(public)/verify/[token]/page.tsx`):**
+   - Создана двуязычная страница в эстетике Quiet Editorial Gallery с поддержкой RU/EN.
+   - Использованы ключи `dashboard.certificates.*` и `statuses.*`.
+3. **Паритет системных словарей `lib/i18n/dictionaries.ts`:**
+   - 13 секций словаря содержат более 520 ключей.
+   - 100% паритет проверен автоматизированным тестом `tests/backend/i18n.test.ts`.
+   - В английском словаре `dictionaries.en` зафиксировано 0 кириллических символов.
+
+---
 **Аудит провел:** Lead Localization & QA Engineer  
-**Ревизия:** fix/localization-production-hardening
+**Ревизия:** fix/security-checkout-i18n-jury-privacy (STAGING READY / MVP)

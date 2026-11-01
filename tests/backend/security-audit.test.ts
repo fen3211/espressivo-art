@@ -440,7 +440,7 @@ describe("Comprehensive Security & RBAC Audit (espressivo ART)", () => {
       // 1. Create application with consentPublicStream = false
       const nonStreamApp = await prisma.application.create({
         data: {
-          code: `EXP-NS-${Date.now().toString().slice(-4)}`,
+          code: `EXP-NS-${Date.now()}-${Math.floor(Math.random() * 100000)}`,
           userId: participantAUser.id,
           competitionId: testCompetitionId,
           nominationId: testNominationId,
@@ -551,7 +551,8 @@ describe("Comprehensive Security & RBAC Audit (espressivo ART)", () => {
           transactionId: "fake_tx_123",
           applicationId: applicationAId,
           amount: 2500,
-          status: "CONFIRMED",
+        currency: "RUB",
+        status: "CONFIRMED",
           signature: "forged_signature_bad_hash",
         }),
       });
@@ -603,6 +604,7 @@ describe("Comprehensive Security & RBAC Audit (espressivo ART)", () => {
         transactionId: paymentSession.transactionId,
         applicationId: payApp.id,
         amount: tamperedAmount,
+        currency: "RUB",
         status: "CONFIRMED",
       });
 
@@ -677,6 +679,7 @@ describe("Comprehensive Security & RBAC Audit (espressivo ART)", () => {
         transactionId: paymentSession.transactionId,
         applicationId: payApp.id,
         amount: 2500,
+        currency: "USD",
         status: "CONFIRMED",
       });
 
@@ -744,6 +747,7 @@ describe("Comprehensive Security & RBAC Audit (espressivo ART)", () => {
         transactionId: paymentSession.transactionId,
         applicationId: payApp.id,
         amount: 3000,
+        currency: "RUB",
         status: "CONFIRMED",
       });
 
@@ -755,7 +759,8 @@ describe("Comprehensive Security & RBAC Audit (espressivo ART)", () => {
           transactionId: paymentSession.transactionId,
           applicationId: payApp.id,
           amount: 3000,
-          status: "CONFIRMED",
+        currency: "RUB",
+        status: "CONFIRMED",
           signature,
         }),
       });
@@ -779,7 +784,8 @@ describe("Comprehensive Security & RBAC Audit (espressivo ART)", () => {
           transactionId: paymentSession.transactionId,
           applicationId: payApp.id,
           amount: 3000,
-          status: "CONFIRMED",
+        currency: "RUB",
+        status: "CONFIRMED",
           signature,
         }),
       });

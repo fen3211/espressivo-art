@@ -7,15 +7,13 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Table, Column } from '@/components/ui/Table';
-import { Play, EyeOff, Eye, Search } from 'lucide-react';
+import { Play, ShieldCheck, Search } from 'lucide-react';
 
 interface JuryQueueRow extends Record<string, unknown> {
   id: string;
   code: string;
   participantMaskedRu: string;
   participantMaskedEn: string;
-  participantRealRu: string;
-  participantRealEn: string;
   nominationRu: string;
   nominationEn: string;
   categoryRu: string;
@@ -27,7 +25,6 @@ interface JuryQueueRow extends Record<string, unknown> {
 
 export default function JuryApplicationsQueuePage() {
   const { locale, dict } = useLanguage();
-  const [blindMode, setBlindMode] = useState<boolean>(true);
   const [filter, setFilter] = useState<string>('ALL');
   const [search, setSearch] = useState<string>('');
 
@@ -37,8 +34,6 @@ export default function JuryApplicationsQueuePage() {
       code: 'EXP-2026-0042',
       participantMaskedRu: 'Кандидат #0042 (Анонимно)',
       participantMaskedEn: 'Candidate #0042 (Anonymous)',
-      participantRealRu: 'Алексеева София (ДШИ им. Чайковского)',
-      participantRealEn: 'Sofia Alekseeva (Tchaikovsky Music School)',
       nominationRu: 'Академический вокал (Соло)',
       nominationEn: 'Academic Vocal (Solo)',
       categoryRu: 'Группа II (12–14 лет)',
@@ -52,8 +47,6 @@ export default function JuryApplicationsQueuePage() {
       code: 'EXP-2026-0155',
       participantMaskedRu: 'Кандидат #0155 (Анонимно)',
       participantMaskedEn: 'Candidate #0155 (Anonymous)',
-      participantRealRu: 'Екатерина Морозова (МГДМШ им. Гнесиных)',
-      participantRealEn: 'Ekaterina Morozova (Gnessin Music School)',
       nominationRu: 'Джазовый вокал',
       nominationEn: 'Jazz Vocal',
       categoryRu: 'Группа I (9–11 лет)',
@@ -67,8 +60,6 @@ export default function JuryApplicationsQueuePage() {
       code: 'EXP-2026-0201',
       participantMaskedRu: 'Кандидат #0201 (Анонимно)',
       participantMaskedEn: 'Candidate #0201 (Anonymous)',
-      participantRealRu: 'Артур Вартанян (Ереванская спец. муз. школа)',
-      participantRealEn: 'Artur Vardanyan (Yerevan Music School)',
       nominationRu: 'Эстрадный вокал (Соло)',
       nominationEn: 'Pop & Contemporary Vocal (Solo)',
       categoryRu: 'Группа III (15–17 лет)',
@@ -82,8 +73,6 @@ export default function JuryApplicationsQueuePage() {
       code: 'EXP-2026-0089',
       participantMaskedRu: 'Кандидат #0089',
       participantMaskedEn: 'Candidate #0089',
-      participantRealRu: 'Алексеева София',
-      participantRealEn: 'Sofia Alekseeva',
       nominationRu: 'Эстрадный вокал (Соло)',
       nominationEn: 'Pop & Contemporary Vocal (Solo)',
       categoryRu: 'Группа II (12–14 лет)',
@@ -115,9 +104,7 @@ export default function JuryApplicationsQueuePage() {
       render: (r) => (
         <div>
           <div className="font-medium text-[#fcfcfc]">
-            {blindMode
-              ? (locale === 'ru' ? r.participantMaskedRu : r.participantMaskedEn)
-              : (locale === 'ru' ? r.participantRealRu : r.participantRealEn)}
+            {locale === 'ru' ? r.participantMaskedRu : r.participantMaskedEn}
           </div>
           <div className="text-xs text-[#757580]">
             {locale === 'ru' ? r.categoryRu : r.categoryEn}
@@ -190,22 +177,12 @@ export default function JuryApplicationsQueuePage() {
         </div>
 
         {/* Blind mode switch */}
-        <button
-          type="button"
-          onClick={() => setBlindMode(!blindMode)}
-          className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-mono transition-all cursor-pointer ${
-            blindMode
-              ? 'bg-[#181826] text-[#6199f6] border border-[#6199f6] shadow-[0_0_12px_rgba(97,153,246,0.25)]'
-              : 'bg-[#08080c] text-[#757580] border border-[#2a2a32]'
-          }`}
-        >
-          {blindMode ? <EyeOff className="w-4 h-4 text-[#6199f6]" /> : <Eye className="w-4 h-4" />}
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-mono bg-[#181826] text-[#6199f6] border border-[#6199f6] shadow-[0_0_12px_rgba(97,153,246,0.25)] select-none">
+          <ShieldCheck className="w-4 h-4 text-[#6199f6]" />
           <span>
-            {blindMode
-              ? (locale === 'ru' ? 'Слепой протокол: ВКЛЮЧЕН' : 'Blind Protocol: ACTIVE')
-              : (locale === 'ru' ? 'Личные данные: ВИДИМЫ' : 'Personal Data: VISIBLE')}
+            {locale === 'ru' ? 'Слепой протокол: СТРОГО АКТИВЕН' : 'Blind Protocol: STRICTLY ACTIVE'}
           </span>
-        </button>
+        </div>
       </div>
 
       {/* Filter Tabs */}

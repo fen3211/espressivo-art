@@ -1,12 +1,15 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import prisma from "@/lib/prisma";
 import { GET as getJuryApplications } from "@/app/api/jury/applications/route";
+import { GET as getJuryApplicationById } from "@/app/api/jury/applications/[id]/route";
 import { POST as postJuryEvaluation } from "@/app/api/jury/evaluations/route";
+import { POST as postJuryEvaluateById } from "@/app/api/jury/applications/[id]/evaluate/route";
 import { createSessionToken } from "@/lib/auth";
 
 describe("Jury Adjudication & Minor PII Isolation (Blind Audition)", () => {
   let juryUserId: string;
   let juryToken: string;
+  let unassignedJuryToken: string;
   let testAppId: string;
 
   beforeAll(async () => {
@@ -21,6 +24,13 @@ describe("Jury Adjudication & Minor PII Isolation (Blind Audition)", () => {
       email: jury.email,
       role: "JURY",
       fullName: jury.fullName,
+    });
+
+    unassignedJuryToken = await createSessionToken({
+      userId: "unassigned_jury_999",
+      email: "foreign.jury@example.com",
+      role: "JURY",
+      fullName: "Неназначенный Эксперт Жюри",
     });
 
     // Find seeded application under review (EXP-2026-1004)
@@ -63,6 +73,49 @@ describe("Jury Adjudication & Minor PII Isolation (Blind Audition)", () => {
     expect((appItem as Record<string, unknown>).birthDate).toBeUndefined();
     expect((appItem as Record<string, unknown>).teacherName).toBeUndefined();
     expect((appItem as Record<string, unknown>).institution).toBeUndefined();
+  });
+
+  it("should isolate minor PII from single application detail endpoint (GET /api/jury/applications/[id])", async () => {
+    const req = new Request(`http://localhost:3000/api/jury/applications/${testAppId}`, {
+      headers: {
+        authorization: `Bearer ${juryToken}`,
+      },
+    });
+
+    const response = await getJuryApplicationById(req, {
+      params: Promise.resolve({ id: testAppId }),
+    });
+
+    expect(response.status).toBe(200);
+    const data = await response.json();
+
+    expect(data.code).toBe("EXP-2026-1004");
+    expect(data.repertoire).toBeDefined();
+    expect(data.videoUrl).toBeDefined();
+    expect(data.isBlindModeDefault).toBe(true);
+
+    // Minor PII must be completely absent
+    expect((data as Record<string, unknown>).participantName).toBeUndefined();
+    expect((data as Record<string, unknown>).parentFullName).toBeUndefined();
+    expect((data as Record<string, unknown>).parentEmail).toBeUndefined();
+    expect((data as Record<string, unknown>).parentPhone).toBeUndefined();
+    expect((data as Record<string, unknown>).birthDate).toBeUndefined();
+    expect((data as Record<string, unknown>).teacherName).toBeUndefined();
+    expect((data as Record<string, unknown>).institution).toBeUndefined();
+  });
+
+  it("should reject jury member from accessing an unassigned application (403)", async () => {
+    const req = new Request(`http://localhost:3000/api/jury/applications/${testAppId}`, {
+      headers: {
+        authorization: `Bearer ${unassignedJuryToken}`,
+      },
+    });
+
+    const response = await getJuryApplicationById(req, {
+      params: Promise.resolve({ id: testAppId }),
+    });
+
+    expect(response.status).toBe(403);
   });
 
   it("should validate scoring criteria bounds (0-25 each)", async () => {
@@ -109,73 +162,77 @@ describe("Jury Adjudication & Minor PII Isolation (Blind Audition)", () => {
       },
     });
 
-    // 1. Save draft
-    const draftReq = new Request("http://localhost:3000/api/jury/evaluations", {
+    // 1. Save draft via /api/jury/applications/[id]/evaluate
+    const draftReq = new Request(`http://localhost:3000/api/jury/applications/${testAppId}/evaluate`, {
       method: "POST",
       headers: {
         authorization: `Bearer ${juryToken}`,
         "content-type": "application/json",
       },
       body: JSON.stringify({
-        applicationId: testAppId,
         scoreTechnique: 24,
         scoreMusicality: 23,
         scoreArtistry: 24,
         scoreRepertoire: 23,
         comment: "Черновик отзыва: великолепное интонирование",
-        isFinalSubmit: false,
+        isDraft: true,
       }),
     });
 
-    const draftRes = await postJuryEvaluation(draftReq);
+    const draftRes = await postJuryEvaluateById(draftReq, {
+      params: Promise.resolve({ id: testAppId }),
+    });
     expect(draftRes.status).toBe(200);
     const draftData = await draftRes.json();
     expect(draftData.totalScore).toBe(94);
     expect(draftData.isLocked).toBe(false);
 
     // 2. Final Submit (lock)
-    const finalReq = new Request("http://localhost:3000/api/jury/evaluations", {
+    const finalReq = new Request(`http://localhost:3000/api/jury/applications/${testAppId}/evaluate`, {
       method: "POST",
       headers: {
         authorization: `Bearer ${juryToken}`,
         "content-type": "application/json",
       },
       body: JSON.stringify({
-        applicationId: testAppId,
         scoreTechnique: 24,
         scoreMusicality: 24,
         scoreArtistry: 24,
         scoreRepertoire: 24,
         comment: "Финальная оценка: безупречная техника и зрелое исполнение",
+        isDraft: false,
         isFinalSubmit: true,
       }),
     });
 
-    const finalRes = await postJuryEvaluation(finalReq);
+    const finalRes = await postJuryEvaluateById(finalReq, {
+      params: Promise.resolve({ id: testAppId }),
+    });
     expect(finalRes.status).toBe(200);
     const finalData = await finalRes.json();
     expect(finalData.totalScore).toBe(96);
     expect(finalData.isLocked).toBe(true);
 
     // 3. Attempt modification after lock -> MUST return 403
-    const lockedReq = new Request("http://localhost:3000/api/jury/evaluations", {
+    const lockedReq = new Request(`http://localhost:3000/api/jury/applications/${testAppId}/evaluate`, {
       method: "POST",
       headers: {
         authorization: `Bearer ${juryToken}`,
         "content-type": "application/json",
       },
       body: JSON.stringify({
-        applicationId: testAppId,
         scoreTechnique: 20,
         scoreMusicality: 20,
         scoreArtistry: 20,
         scoreRepertoire: 20,
         comment: "Попытка изменить зафиксированную оценку",
-        isFinalSubmit: false,
+        isDraft: false,
       }),
     });
 
-    const lockedRes = await postJuryEvaluation(lockedReq);
+    const lockedRes = await postJuryEvaluateById(lockedReq, {
+      params: Promise.resolve({ id: testAppId }),
+    });
     expect(lockedRes.status).toBe(403);
     const lockedData = await lockedRes.json();
     expect(lockedData.error).toContain("заблокирована");

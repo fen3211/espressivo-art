@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useLanguage } from '@/components/LanguageContext';
 import { Card } from '@/components/ui/Card';
@@ -28,47 +28,65 @@ export default function ApplicationsPage() {
   const [filter, setFilter] = useState<string>('ALL');
   const [search, setSearch] = useState<string>('');
 
-  const rawData: ApplicationRow[] = [
+  const [dataList, setDataList] = useState<ApplicationRow[]>([
     {
-      id: 'app-001',
-      code: 'EXP-2026-0042',
-      participantNameRu: 'Алексеева София (13 лет)',
-      participantNameEn: 'Sofia Alekseeva (13 yrs)',
+      id: 'EXP-2026-1004',
+      code: 'EXP-2026-1004',
+      participantNameRu: 'Дмитрий Орлов',
+      participantNameEn: 'Dmitry Orlov',
       nominationRu: 'Академический вокал (Соло)',
       nominationEn: 'Academic Vocal (Solo)',
-      categoryRu: 'Группа II (12–14 лет)',
-      categoryEn: 'Group II (12–14 yrs)',
+      categoryRu: 'Категория C (13–16 лет)',
+      categoryEn: 'Category C (13–16 yrs)',
       status: 'UNDER_REVIEW',
       paymentStatus: 'PAID',
       createdAt: '14.05.2026',
     },
     {
-      id: 'app-002',
-      code: 'EXP-2026-0089',
-      participantNameRu: 'Алексеева София (13 лет)',
-      participantNameEn: 'Sofia Alekseeva (13 yrs)',
-      nominationRu: 'Эстрадный вокал (Соло)',
-      nominationEn: 'Pop & Contemporary Vocal (Solo)',
-      categoryRu: 'Группа II (12–14 лет)',
-      categoryEn: 'Group II (12–14 yrs)',
-      status: 'EVALUATED',
+      id: 'EXP-2026-1005',
+      code: 'EXP-2026-1005',
+      participantNameRu: 'Екатерина Воронова',
+      participantNameEn: 'Ekaterina Voronova',
+      nominationRu: 'Академический вокал (Соло)',
+      nominationEn: 'Academic Vocal (Solo)',
+      categoryRu: 'Категория D (17–25 лет)',
+      categoryEn: 'Category D (17–25 yrs)',
+      status: 'COMPLETED',
       paymentStatus: 'PAID',
       createdAt: '02.05.2026',
     },
-    {
-      id: 'app-003',
-      code: 'EXP-2026-0155',
-      participantNameRu: 'Алексеева София (13 лет)',
-      participantNameEn: 'Sofia Alekseeva (13 yrs)',
-      nominationRu: 'Джазовый вокал',
-      nominationEn: 'Jazz Vocal',
-      categoryRu: 'Группа II (12–14 лет)',
-      categoryEn: 'Group II (12–14 yrs)',
-      status: 'PAYMENT_PENDING',
-      paymentStatus: 'PENDING',
-      createdAt: '22.05.2026',
-    },
-  ];
+  ]);
+
+  useEffect(() => {
+    async function fetchApps() {
+      try {
+        const res = await fetch('/api/applications');
+        if (res.ok) {
+          const apps = await res.json();
+          if (Array.isArray(apps) && apps.length > 0) {
+            setDataList(apps.map((a: any) => ({
+              id: a.id,
+              code: a.code,
+              participantNameRu: a.participantName,
+              participantNameEn: a.participantName,
+              nominationRu: a.nomination?.titleRu || 'Вокал',
+              nominationEn: a.nomination?.titleEn || 'Vocal',
+              categoryRu: a.ageCategory?.titleRu || 'Категория',
+              categoryEn: a.ageCategory?.titleEn || 'Category',
+              status: a.status,
+              paymentStatus: a.paymentStatus,
+              createdAt: new Date(a.createdAt).toLocaleDateString('ru-RU'),
+            })));
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load applications from API:', e);
+      }
+    }
+    fetchApps();
+  }, []);
+
+  const rawData = dataList;
 
   const filteredData = rawData.filter((item) => {
     if (filter !== 'ALL' && item.status !== filter) return false;

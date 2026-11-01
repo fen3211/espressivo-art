@@ -1,10 +1,14 @@
-﻿# Legal & Compliance Assessment: espressivo ART Platform
+# Legal & Compliance Assessment: espressivo ART Platform
 
 **Проект**: Международная платформа творческих конкурсов **espressivo ART**  
 **Флагманский конкурс**: *espressivo VOCAL — Young Talents*  
 **Дата аудита**: 01.11.2026  
 **Ведущий специалист**: AI Legal Researcher & Compliance Specialist (Antigravity Multi-Agent System)  
-**Статус документа**: Официальное заключение Legal Gate  
+**Статус документа**: DRAFT — требует проверки квалифицированным юристом до использования в production  
+
+> [!IMPORTANT]
+> **DRAFT — требует проверки квалифицированным юристом до использования в production.**  
+> Данный документ и сопутствующие правовые драфты подготовлены с помощью AI в качестве структурированного инженерного анализа бизнес-процессов и архитектуры платформы espressivo ART. Они не являются официальной юридической консультацией лицензированного адвоката и не гарантируют безусловного соответствия законодательству до прохождения очной правовой экспертизы. См. также [QUESTIONS_FOR_LEGAL_COUNSEL.md](./QUESTIONS_FOR_LEGAL_COUNSEL.md).
 
 ---
 

@@ -201,42 +201,44 @@ export default function LoginPage() {
           </div>
         </form>
 
-        {/* Quick Demo Access Buttons for instant QA / evaluation */}
-        <div className="mt-10 pt-8 border-t border-[#000000]/20">
-          <div className="text-[10px] uppercase font-mono font-bold tracking-widest text-[#757580] mb-3 text-center">
-            {locale === 'ru' ? 'ДЕМО-ДОСТУП В 1 КЛИК ДЛЯ ПРОВЕРКИ' : '1-CLICK DEMO ACCESS FOR QA'}
+        {/* Quick Demo Access Buttons for instant QA / evaluation (Development & Staging only) */}
+        {process.env.NODE_ENV !== 'production' && (
+          <div className="mt-10 pt-8 border-t border-[#000000]/20">
+            <div className="text-[10px] uppercase font-mono font-bold tracking-widest text-[#757580] mb-3 text-center">
+              {locale === 'ru' ? 'ДЕМО-ДОСТУП В 1 КЛИК ДЛЯ ПРОВЕРКИ' : '1-CLICK DEMO ACCESS FOR QA'}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                variant="outline-ink"
+                size="sm"
+                onClick={() => quickDemoLogin('PARTICIPANT')}
+              >
+                {dict.common.participant} →
+              </Button>
+              <Button
+                variant="outline-ink"
+                size="sm"
+                onClick={() => quickDemoLogin('TEACHER')}
+              >
+                {dict.common.teacher} (20%) →
+              </Button>
+              <Button
+                variant="outline-ink"
+                size="sm"
+                onClick={() => quickDemoLogin('JURY')}
+              >
+                {dict.common.jury} →
+              </Button>
+              <Button
+                variant="outline-ink"
+                size="sm"
+                onClick={() => quickDemoLogin('ADMIN')}
+              >
+                {dict.common.admin} →
+              </Button>
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              variant="outline-ink"
-              size="sm"
-              onClick={() => quickDemoLogin('PARTICIPANT')}
-            >
-              {dict.common.participant} →
-            </Button>
-            <Button
-              variant="outline-ink"
-              size="sm"
-              onClick={() => quickDemoLogin('TEACHER')}
-            >
-              {dict.common.teacher} (20%) →
-            </Button>
-            <Button
-              variant="outline-ink"
-              size="sm"
-              onClick={() => quickDemoLogin('JURY')}
-            >
-              {dict.common.jury} →
-            </Button>
-            <Button
-              variant="outline-ink"
-              size="sm"
-              onClick={() => quickDemoLogin('ADMIN')}
-            >
-              {dict.common.admin} →
-            </Button>
-          </div>
-        </div>
+        )}
 
         {/* Registration link */}
         <div className="mt-8 text-center text-xs font-serif text-[#121212]">

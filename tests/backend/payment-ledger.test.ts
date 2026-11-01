@@ -121,6 +121,7 @@ describe("Payment & Double-Entry Ledger Module (lib/payment-gateway.ts)", () => 
       transactionId: session.transactionId,
       applicationId: app.id,
       amount: 2500,
+      currency: "RUB",
       status: "CONFIRMED",
     });
 
@@ -129,6 +130,7 @@ describe("Payment & Double-Entry Ledger Module (lib/payment-gateway.ts)", () => 
       transactionId: session.transactionId,
       applicationId: app.id,
       amount: 2500,
+      currency: "RUB",
       status: "CONFIRMED",
       signature,
     });
@@ -192,6 +194,7 @@ describe("Payment & Double-Entry Ledger Module (lib/payment-gateway.ts)", () => 
       transactionId: session.transactionId,
       applicationId: app.id,
       amount: 2500,
+      currency: "RUB",
       status: "CONFIRMED",
     });
 
@@ -200,6 +203,7 @@ describe("Payment & Double-Entry Ledger Module (lib/payment-gateway.ts)", () => 
       transactionId: session.transactionId,
       applicationId: app.id,
       amount: 2500,
+      currency: "RUB",
       status: "CONFIRMED",
       signature,
     });
@@ -215,6 +219,7 @@ describe("Payment & Double-Entry Ledger Module (lib/payment-gateway.ts)", () => 
       transactionId: session.transactionId,
       applicationId: app.id,
       amount: 2500,
+      currency: "RUB",
       status: "CONFIRMED",
       signature,
     });
@@ -240,11 +245,12 @@ describe("Payment & Double-Entry Ledger Module (lib/payment-gateway.ts)", () => 
   });
 
   it("should reject webhook with invalid signature", async () => {
-    const fakeSignature = "invalid_signature_hex_1234567890abcdef";
+    const fakeSignature = "invalid_signature_hex_1234567890abcdef1234567890abcdef1234567890abcdef";
     const result = await gateway.processWebhook({
       transactionId: "non_existent_tx",
       applicationId: "non_existent_app",
       amount: 2500,
+      currency: "RUB",
       status: "CONFIRMED",
       signature: fakeSignature,
     });

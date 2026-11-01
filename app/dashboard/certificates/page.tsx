@@ -1,34 +1,94 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/components/LanguageContext';
 import { Button } from '@/components/ui/Button';
-import { Download, QrCode } from 'lucide-react';
+import { Download, QrCode, CheckCircle2 } from 'lucide-react';
+
+interface CertificateInfo {
+  applicationId: string;
+  number: string;
+  participantNameRu: string;
+  participantNameEn: string;
+  competitionTitle: string;
+  nominationTitleRu: string;
+  nominationTitleEn: string;
+  awardDegree: string;
+  teacherNameRu: string;
+  teacherNameEn: string;
+  issueDate: string;
+  presidentJuryRu: string;
+  presidentJuryEn: string;
+  qrCodeToken: string;
+}
 
 export default function CertificatesPage() {
   const { locale, dict } = useLanguage();
-
-  const certificateData = {
-    number: 'ESP-VOC-2026-0089-L1',
-    participantNameRu: 'Алексеева София Андреевна',
-    participantNameEn: 'Sofia Alekseeva',
+  const [loading, setLoading] = useState<boolean>(true);
+  const [downloading, setDownloading] = useState<boolean>(false);
+  const [certificateData, setCertificateData] = useState<CertificateInfo>({
+    applicationId: '',
+    number: 'ESP-VOC-2026-1005-LAUR1',
+    participantNameRu: 'Екатерина Воронова',
+    participantNameEn: 'Ekaterina Voronova',
     competitionTitle: 'espressivo VOCAL — Young Talents (Season 2026)',
-    nominationTitleRu: 'Эстрадный вокал (Соло) • Группа II (12–14 лет)',
-    nominationTitleEn: 'Pop & Contemporary Vocal (Solo) • Group II (12–14 yrs)',
+    nominationTitleRu: 'Академический вокал (Соло) • Категория D (18–25 лет)',
+    nominationTitleEn: 'Classical Vocal (Solo) • Category D (18–25 yrs)',
     awardDegree: dict.awards.LAUREATE_1,
-    teacherNameRu: 'Иванова Анна Сергеевна',
-    teacherNameEn: 'Anna Ivanova',
-    issueDate: '02.05.2026',
+    teacherNameRu: 'Мария Александровна Смирнова',
+    teacherNameEn: 'Maria Smirnova',
+    issueDate: '01.06.2026',
     presidentJuryRu: 'Проф. Вальтер Кауфманн (Венская опера)',
     presidentJuryEn: 'Prof. Walter Kaufmann (Vienna State Opera)',
-  };
+    qrCodeToken: 'cert_token_voronova_2026',
+  });
 
-  const handleDownloadPdf = () => {
-    alert(
-      locale === 'ru'
-        ? `Формирование защищенного полиграфического PDF диплома #${certificateData.number}`
-        : `Generating secure high-resolution print PDF diploma #${certificateData.number}`
-    );
+  useEffect(() => {
+    async function loadCertificates() {
+      try {
+        const res = await fetch('/api/applications');
+        if (res.ok) {
+          const apps = await res.json();
+          const appWithCert = apps.find((a: any) => a.certificate || a.status === 'COMPLETED');
+          if (appWithCert) {
+            setCertificateData((prev) => ({
+              ...prev,
+              applicationId: appWithCert.id,
+              number: appWithCert.certificate?.certificateNumber || prev.number,
+              participantNameRu: appWithCert.participantName || prev.participantNameRu,
+              nominationTitleRu: appWithCert.nomination?.titleRu || prev.nominationTitleRu,
+              nominationTitleEn: appWithCert.nomination?.titleEn || prev.nominationTitleEn,
+              awardDegree: appWithCert.certificate?.awardDegree ? (dict.awards[appWithCert.certificate.awardDegree as keyof typeof dict.awards] || appWithCert.certificate.awardDegree) : prev.awardDegree,
+              teacherNameRu: appWithCert.teacherName || prev.teacherNameRu,
+              qrCodeToken: appWithCert.certificate?.qrCodeToken || prev.qrCodeToken,
+            }));
+          } else if (apps.length > 0) {
+            setCertificateData((prev) => ({
+              ...prev,
+              applicationId: apps[0].id,
+            }));
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load certificate from API:', e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadCertificates();
+  }, [dict]);
+
+  const handleDownloadPdf = async () => {
+    if (!certificateData.applicationId) {
+      window.open('/api/certificates/dummy/download', '_blank');
+      return;
+    }
+    setDownloading(true);
+    try {
+      window.location.href = `/api/certificates/${certificateData.applicationId}/download`;
+    } finally {
+      setTimeout(() => setDownloading(false), 2000);
+    }
   };
 
   return (
@@ -37,21 +97,22 @@ export default function CertificatesPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-[#2a2a32]">
         <div>
           <div className="text-[11px] font-mono uppercase tracking-wider text-[#6199f6] mb-1">
-            CREDENTIAL REPOSITORY
+            CREDENTIAL REPOSITORY // VERIFIED PDF
           </div>
           <h1 className="text-2xl sm:text-3xl font-medium text-[#fcfcfc]">
             {locale === 'ru' ? 'Электронные дипломы и сертификаты' : 'Digital Diplomas & Certificates'}
           </h1>
           <p className="text-xs sm:text-sm text-[#a3a3b3] mt-1">
             {locale === 'ru'
-              ? 'Официальные международные дипломы с верификационным QR-кодом'
-              : 'Official international certificates with verified QR credentials'}
+              ? 'Официальные международные дипломы с криптографическим QR-кодом для мгновенной валидации'
+              : 'Official international certificates with cryptographic QR credentials for instant validation'}
           </p>
         </div>
 
         <Button
           variant="iris-action"
           size="md"
+          loading={downloading}
           iconLeft={<Download className="w-4 h-4" />}
           onClick={handleDownloadPdf}
         >
@@ -118,26 +179,38 @@ export default function CertificatesPage() {
             <div className="font-mono font-bold text-sm text-[#000000]">
               {certificateData.number}
             </div>
-            <div className="text-[10px] text-[#757580] mt-0.5">
-              {locale === 'ru' ? 'Дата выдачи: ' : 'Issue Date: '}
+            <div className="font-mono text-[10px] text-[#757580] mt-1">
+              {locale === 'ru' ? 'ДАТА ВЫДАЧИ: ' : 'DATE OF ISSUE: '}
               {certificateData.issueDate}
             </div>
           </div>
 
-          <div className="text-center">
-            <div className="font-serif italic text-sm text-[#000000]">Walter Kaufmann</div>
-            <div className="text-[10px] uppercase font-sans tracking-wider text-[#757580] border-t border-[#000000] pt-1 mt-1">
-              {locale === 'ru' ? certificateData.presidentJuryRu : certificateData.presidentJuryEn}
+          {/* QR Verification badge */}
+          <div className="flex items-center gap-3 bg-[#ffffff] p-2 border border-[#000000]">
+            <QrCode className="w-10 h-10 text-[#000000]" />
+            <div className="text-left">
+              <div className="font-sans font-bold text-[9px] uppercase tracking-wider text-[#000000] flex items-center gap-1">
+                <CheckCircle2 className="w-3 h-3 text-[#22c55e]" />
+                {locale === 'ru' ? 'ВЕРИФИЦИРОВАНО' : 'VERIFIED DIPLOMA'}
+              </div>
+              <a
+                href={`/verify/${certificateData.qrCodeToken}`}
+                target="_blank"
+                rel="noreferrer"
+                className="font-mono text-[8px] text-[#6199f6] hover:underline"
+              >
+                /verify/{certificateData.qrCodeToken.slice(0, 16)}...
+              </a>
             </div>
           </div>
 
-          <div className="flex flex-col items-center">
-            <div className="w-16 h-16 bg-[#ffffff] border border-[#000000] flex items-center justify-center p-1">
-              <QrCode className="w-12 h-12 text-[#000000]" />
+          <div className="text-right">
+            <div className="font-serif italic text-xs text-[#000000]">
+              {locale === 'ru' ? certificateData.presidentJuryRu : certificateData.presidentJuryEn}
             </div>
-            <span className="text-[8px] font-mono uppercase tracking-widest text-[#757580] mt-1">
-              VERIFIED QR
-            </span>
+            <div className="font-sans text-[9px] uppercase tracking-wider text-[#757580]">
+              {locale === 'ru' ? 'Председатель международного жюри' : 'Head of the International Jury'}
+            </div>
           </div>
         </div>
       </div>

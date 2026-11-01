@@ -4,7 +4,12 @@ const bcrypt = require("bcryptjs");
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("Starting espressivo ART database seeding...");
+  if (process.env.NODE_ENV === "production" && process.env.ALLOW_PROD_SEED !== "true") {
+    console.error("CRITICAL ERROR: Seeding demo accounts (participant@espressivo.art, etc.) with default passwords is strictly prohibited in PRODUCTION environments.");
+    process.exit(1);
+  }
+
+  console.log("Starting espressivo ART database seeding (Development/Staging mode)...");
 
   // 1. Clear existing data in reverse foreign-key order
   await prisma.auditLog.deleteMany();

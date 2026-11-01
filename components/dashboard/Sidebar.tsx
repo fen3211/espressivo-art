@@ -22,6 +22,7 @@ import {
   DollarSign,
   LogOut,
   ExternalLink,
+  X,
 } from 'lucide-react';
 import { useLanguage } from '@/components/LanguageContext';
 
@@ -31,6 +32,8 @@ export interface SidebarProps {
   role: UserRole;
   collapsed?: boolean;
   onToggleCollapse?: () => void;
+  isOpenMobile?: boolean;
+  onCloseMobile?: () => void;
 }
 
 interface NavItem {
@@ -41,7 +44,7 @@ interface NavItem {
   badge?: string;
 }
 
-export function Sidebar({ role }: SidebarProps) {
+export function Sidebar({ role, isOpenMobile = false, onCloseMobile }: SidebarProps) {
   const pathname = usePathname();
   const { locale, dict } = useLanguage();
 
@@ -93,17 +96,30 @@ export function Sidebar({ role }: SidebarProps) {
     ADMIN: { ru: 'Администрация', en: 'Admin Control' },
   };
 
-  return (
-    <aside className="w-64 shrink-0 bg-[#040407] border-r border-[#2a2a32] flex flex-col justify-between select-none">
+  const renderSidebarContent = (isMobile: boolean) => (
+    <>
       <div>
         {/* Workspace Brand / Header */}
         <div className="h-16 px-5 flex items-center justify-between border-b border-[#2a2a32]">
-          <Link href="/" className="flex items-center gap-2 group">
+          <Link
+            href="/"
+            onClick={() => isMobile && onCloseMobile?.()}
+            className="flex items-center gap-2 group"
+          >
             <span className="w-2.5 h-2.5 rounded-full bg-[#6199f6] shadow-[0_0_8px_#6199f6]" />
             <span className="font-serif text-lg tracking-tight text-[#fcfcfc] group-hover:text-[#6199f6] transition-colors">
               espressivo <span className="font-sans text-xs tracking-widest text-[#a3a3b3]">PRO</span>
             </span>
           </Link>
+          {isMobile && (
+            <button
+              onClick={onCloseMobile}
+              className="p-1.5 rounded-full text-[#a3a3b3] hover:text-[#fcfcfc] hover:bg-[#181826] cursor-pointer"
+              aria-label="Close navigation"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
         {/* Role Stamp */}
@@ -125,6 +141,7 @@ export function Sidebar({ role }: SidebarProps) {
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={() => isMobile && onCloseMobile?.()}
                 className={`flex items-center justify-between px-3 py-2.5 rounded-full text-xs font-medium transition-all duration-150 ${
                   isActive
                     ? 'bg-[#181826] text-[#6199f6] border border-[#4f4f80] shadow-[0_0_12px_rgba(97,153,246,0.15)] font-semibold'
@@ -151,6 +168,7 @@ export function Sidebar({ role }: SidebarProps) {
         <Link
           href="/"
           target="_blank"
+          onClick={() => isMobile && onCloseMobile?.()}
           className="flex items-center justify-between px-3 py-2 text-xs text-[#757580] hover:text-[#fcfcfc] transition-colors"
         >
           <span className="flex items-center gap-2">
@@ -162,12 +180,35 @@ export function Sidebar({ role }: SidebarProps) {
 
         <Link
           href="/login"
+          onClick={() => isMobile && onCloseMobile?.()}
           className="flex items-center gap-2 px-3 py-2 rounded-full text-xs text-red-400/80 hover:text-red-300 hover:bg-red-950/20 transition-colors"
         >
           <LogOut className="w-3.5 h-3.5" />
           <span>{dict.nav.exitWorkspace}</span>
         </Link>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop Static Sidebar */}
+      <aside className="hidden lg:flex w-64 shrink-0 bg-[#040407] border-r border-[#2a2a32] flex-col justify-between select-none">
+        {renderSidebarContent(false)}
+      </aside>
+
+      {/* Mobile Drawer Overlay */}
+      {isOpenMobile && (
+        <div className="fixed inset-0 z-50 lg:hidden flex">
+          <div
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm animate-fade-in"
+            onClick={onCloseMobile}
+          />
+          <aside className="relative z-50 w-72 max-w-[85vw] h-full bg-[#040407] border-r border-[#2a2a32] flex flex-col justify-between select-none shadow-2xl animate-slide-up">
+            {renderSidebarContent(true)}
+          </aside>
+        </div>
+      )}
+    </>
   );
 }

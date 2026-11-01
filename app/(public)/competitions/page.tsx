@@ -20,12 +20,12 @@ export default function CompetitionsPage() {
       statusLabelRu: 'ПРИЕМ ЗАЯВОК ОТКРЫТ',
       statusLabelEn: 'ACCEPTING SUBMISSIONS',
       descriptionRu:
-        'Международный конкурс вокального искусства для детей и молодежи (6–22 лет). Академический, эстрадный, джазовый, народный вокал и ансамбли.',
+        'Международный конкурс вокального искусства для детей и молодежи (5–25 лет). Академический, эстрадный, джазовый, народный вокал и ансамбли.',
       descriptionEn:
-        'International vocal arts adjudication for youth (ages 6–22). Classical, contemporary pop, jazz, ethno-vocal disciplines and chamber vocal ensembles.',
+        'International vocal arts adjudication for youth (ages 5–25). Classical, contemporary pop, jazz, ethno-vocal disciplines and chamber vocal ensembles.',
       deadlineRu: 'Дедлайн: 15 июня 2026',
       deadlineEn: 'Deadline: June 15, 2026',
-      fee: '2 500 ₽ / €45',
+      fee: '2 500 ₽ (Соло) / 4 500 ₽ (Ансамбль)',
       image: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=1200&auto=format&fit=crop',
     },
     {

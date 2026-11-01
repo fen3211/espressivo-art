@@ -78,7 +78,7 @@ export default function CompetitionSlugPage() {
           <span className="text-[10px] uppercase font-sans font-bold tracking-wider text-[#757580] block mb-2">
             {locale === 'ru' ? 'Взнос за участие' : 'Entry Fee'}
           </span>
-          <div className="text-xl font-serif text-[#000000]">2 500 ₽ (Соло) / 4 000 ₽ (Ансамбль)</div>
+          <div className="text-xl font-serif text-[#000000]">2 500 ₽ (Соло) / 4 500 ₽ (Ансамбль)</div>
           <p className="text-xs font-serif text-[#121212] mt-1">
             {locale === 'ru' ? 'Включает профессиональную рецензию и диплом' : 'Includes jury written review and official diploma'}
           </p>

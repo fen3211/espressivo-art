@@ -52,7 +52,9 @@ export async function GET(req: Request) {
           ageCategoryTitle: app.ageCategory.titleRu,
           repertoire: app.repertoire,
           performanceDuration: app.performanceDuration,
-          videoUrl: app.videoUrl,
+          videoUrl: null, // Raw video URL stripped for Jury
+          audioUrl: `/api/jury/applications/${app.id}/audio`,
+          isBlindModeEnforced: true,
           videoProvider: app.videoProvider,
           status: app.status,
           hasEvaluation: Boolean(evalRecord && !evalRecord.isDraft),
@@ -179,7 +181,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Конкурс не найден" }, { status: 404 });
     }
 
-    const nomination = await prisma.nomination.findUnique({ where: { id: nominationId } });
+    let nomination = await prisma.nomination.findUnique({ where: { id: nominationId } }).catch(() => null);
+    if (!nomination) {
+      nomination = await prisma.nomination.findFirst({
+        where: { competitionId, code: nominationId },
+      });
+    }
     if (!nomination) {
       return NextResponse.json({ error: "Номинация не найдена" }, { status: 404 });
     }
@@ -190,7 +197,12 @@ export async function POST(req: Request) {
       );
     }
 
-    const ageCategory = await prisma.ageCategory.findUnique({ where: { id: ageCategoryId } });
+    let ageCategory = await prisma.ageCategory.findUnique({ where: { id: ageCategoryId } }).catch(() => null);
+    if (!ageCategory) {
+      ageCategory = await prisma.ageCategory.findFirst({
+        where: { competitionId, code: ageCategoryId },
+      });
+    }
     if (!ageCategory) {
       return NextResponse.json({ error: "Возрастная категория не найдена" }, { status: 404 });
     }
@@ -238,12 +250,13 @@ export async function POST(req: Request) {
       }
     }
 
-    // Generate unique application code
+    // Generate unique application code dynamically from competition year
+    const compYear = (competition.startDate ? new Date(competition.startDate) : new Date()).getFullYear();
     let code = "";
     let isUnique = false;
     while (!isUnique) {
       const randomNum = Math.floor(1000 + Math.random() * 9000);
-      code = `EXP-2026-${randomNum}`;
+      code = `EXP-${compYear}-${randomNum}`;
       const existing = await prisma.application.findUnique({ where: { code } });
       if (!existing) isUnique = true;
     }

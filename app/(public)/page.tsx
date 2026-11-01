@@ -53,11 +53,10 @@ export default function HomePage() {
   ];
 
   const ageCategories = [
-    { code: 'CAT-0', labelRu: 'Дебют', labelEn: 'Debut', age: '6–8 лет' },
-    { code: 'CAT-1', labelRu: 'Младшая', labelEn: 'Junior', age: '9–11 лет' },
-    { code: 'CAT-2', labelRu: 'Средняя', labelEn: 'Intermediate', age: '12–14 лет' },
-    { code: 'CAT-3', labelRu: 'Старшая', labelEn: 'Advanced', age: '15–17 лет' },
-    { code: 'CAT-4', labelRu: 'Молодежная', labelEn: 'Youth Master', age: '18–22 года' },
+    { code: 'CAT-A', labelRu: 'Категория A (Младшая)', labelEn: 'Category A (Junior)', age: '5–8 лет' },
+    { code: 'CAT-B', labelRu: 'Категория B (Средняя)', labelEn: 'Category B (Intermediate)', age: '9–12 лет' },
+    { code: 'CAT-C', labelRu: 'Категория C (Юношеская)', labelEn: 'Category C (Advanced)', age: '13–17 лет' },
+    { code: 'CAT-D', labelRu: 'Категория D (Молодежная)', labelEn: 'Category D (Youth Master)', age: '18–25 лет' },
   ];
 
   const juryBoard = [
@@ -97,6 +96,18 @@ export default function HomePage() {
 
   const faqs = [
     {
+      qRu: 'Какова стоимость участия в конкурсе (организационный взнос)?',
+      qEn: 'What is the entry fee structure for participants?',
+      aRu: 'Организационный взнос составляет 2 500 ₽ за сольное участие (Solo) и 4 500 ₽ за вокальный ансамбль или дуэт (Ensemble). Взнос включает полное экспертное прослушивание, письменную рецензию консерваторского жюри и официальный диплом с QR-верификацией.',
+      aEn: 'The registration fee is 2,500 ₽ for solo participants and 4,500 ₽ for vocal ensembles and chamber duets. The fee covers complete independent adjudication, written conservatory critique, and verified QR diploma issuance.',
+    },
+    {
+      qRu: 'Каковы возрастные категории участников?',
+      qEn: 'What are the participant age categories?',
+      aRu: 'В конкурсе выделены 4 официальные возрастные группы: Категория A (5–8 лет), Категория B (9–12 лет), Категория C (13–17 лет) и Категория D (18–25 лет). Возраст определяется на дату подачи заявки.',
+      aEn: 'There are 4 standardized age divisions: Category A (5–8 y/o), Category B (9–12 y/o), Category C (13–17 y/o), and Category D (18–25 y/o). Age is determined on the date of submission.',
+    },
+    {
       qRu: 'Какие требования предъявляются к видеозаписи выступления?',
       qEn: 'What are the technical requirements for performance video recordings?',
       aRu: 'Запись должна быть сделана непрерывным дублем без монтажных склеек, остановки камеры и использования тюнинга голоса (Pitch Correction / Auto-Tune). Исполнитель должен быть виден в полный рост или по пояс. Минимальное разрешение — Full HD 1080p.',
@@ -105,8 +116,8 @@ export default function HomePage() {
     {
       qRu: 'Как работает реферальная программа для преподавателей (20%)?',
       qEn: 'How does the teacher referral program (20%) work?',
-      aRu: 'Каждый педагог получает персональный реферальный код в кабинете преподавателя. При указании кода учеником или при переходе по ссылке, 20% от регистрационного взноса мгновенно зачисляются на баланс педагога с возможностью официального вывода.',
-      aEn: 'Every teacher receives a personal referral code in their dashboard. When students register using the link or code, 20% of the contest entry fee is immediately credited to the teacher balance with verified bank payout options.',
+      aRu: 'Каждый педагог получает персональный реферальный код в кабинете преподавателя. При указании кода учеником или при переходе по ссылке, 20% от регистрационного взноса (500 ₽ с каждого сольного участия и 900 ₽ с ансамбля) мгновенно зачисляются на баланс педагога с возможностью официального вывода.',
+      aEn: 'Every teacher receives a personal referral code in their dashboard. When students register using the link or code, 20% of the contest entry fee (500 ₽ per solo / 900 ₽ per ensemble) is immediately credited to the teacher balance with verified bank payout options.',
     },
     {
       qRu: 'Каковы критерии оценивания жюри?',
@@ -209,9 +220,9 @@ export default function HomePage() {
                 </div>
                 <div>
                   <div className="text-[10px] uppercase font-sans font-bold tracking-wider text-[#757580]">
-                    {locale === 'ru' ? 'Взнос за соло' : 'Solo Entry'}
+                    {locale === 'ru' ? 'Взнос (Соло / Ансамбль)' : 'Fee (Solo / Ensemble)'}
                   </div>
-                  <div className="text-2xl font-serif text-[#000000] mt-1">2 500 ₽</div>
+                  <div className="text-xl sm:text-2xl font-serif text-[#000000] mt-1">2 500 ₽ / 4 500 ₽</div>
                 </div>
                 <div>
                   <div className="text-[10px] uppercase font-sans font-bold tracking-wider text-[#757580]">
@@ -251,7 +262,7 @@ export default function HomePage() {
             {locale === 'ru' ? 'Номинации и направления' : 'Nominations & Disciplines'}
           </h2>
           <span className="text-[10px] uppercase font-sans font-bold tracking-[0.038em] text-[#121212]">
-            5 НОМИНАЦИЙ • 5 ВОЗРАСТНЫХ ГРУПП
+            5 НОМИНАЦИЙ • 4 КАТЕГОРИИ (A–D: 5–25 ЛЕТ)
           </span>
         </div>
 
@@ -259,7 +270,7 @@ export default function HomePage() {
           {nominations.map((nom) => (
             <div
               key={nom.code}
-              className="border border-[#000000] p-6 flex flex-col justify-between hover:bg-[#dedede] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:shadow-md cursor-pointer"
+              className="border border-[#000000] p-6 flex flex-col justify-between hover:bg-[#dedede] transition-colors duration-200 cursor-pointer"
             >
               <div>
                 <span className="text-[9px] uppercase font-mono font-bold tracking-widest text-[#757580] mb-2 block">
@@ -315,6 +326,73 @@ export default function HomePage() {
                 </Button>
               </Link>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 4b. Contest Stages Timeline */}
+      <section className="max-w-[1440px] mx-auto px-6 sm:px-10 py-20 border-b border-[#000000]">
+        <div className="flex flex-col sm:flex-row justify-between items-baseline mb-12 border-b border-[#000000] pb-4">
+          <div>
+            <span className="text-[10px] uppercase font-sans font-bold tracking-[0.038em] text-[#121212] mb-2 block">
+              SEASON SCHEDULE & PHASES
+            </span>
+            <h2 className="text-2xl sm:text-4xl font-serif text-[#000000]">
+              {locale === 'ru' ? 'Этапы проведения конкурса' : 'Competition Timeline & Stages'}
+            </h2>
+          </div>
+          <span className="text-[10px] uppercase font-sans font-bold tracking-[0.038em] text-[#757580]">
+            СЕЗОН 2026 • 4 ЭТАПА
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="border border-[#000000] p-6 bg-[#dedede]">
+            <span className="font-mono text-xs text-[#757580] block mb-1">ЭТАП 01</span>
+            <h3 className="text-lg font-serif text-[#000000] mb-2">
+              {locale === 'ru' ? 'Приём заявок' : 'Application Window'}
+            </h3>
+            <p className="text-xs font-serif text-[#121212]">
+              {locale === 'ru'
+                ? 'До 15 июня: онлайн-регистрация, прикрепление видеозаписи единым непрерывным дублем без автотюна.'
+                : 'Until June 15: online entry submission, continuous single-take video recording upload without autotune.'}
+            </p>
+          </div>
+
+          <div className="border border-[#000000] p-6 bg-[#dedede]">
+            <span className="font-mono text-xs text-[#757580] block mb-1">ЭТАП 02</span>
+            <h3 className="text-lg font-serif text-[#000000] mb-2">
+              {locale === 'ru' ? 'Слепое оценивание' : 'Blind Adjudication'}
+            </h3>
+            <p className="text-xs font-serif text-[#121212]">
+              {locale === 'ru'
+                ? '16–23 июня: независимое судейство консерваторской коллегии по 100-балльной шкале (4 критерия по 25 баллов).'
+                : 'June 16–23: independent adjudication by conservatory board across 4 criteria (25 points each).'}
+            </p>
+          </div>
+
+          <div className="border border-[#000000] p-6 bg-[#dedede]">
+            <span className="font-mono text-xs text-[#757580] block mb-1">ЭТАП 03</span>
+            <h3 className="text-lg font-serif text-[#000000] mb-2">
+              {locale === 'ru' ? 'Коллегия Гран-при' : 'Grand Prix Council'}
+            </h3>
+            <p className="text-xs font-serif text-[#121212]">
+              {locale === 'ru'
+                ? '24–27 июня: согласование обладателей Гран-при и персональных письменных рецензий экспертов.'
+                : 'June 24–27: Grand Prix ratification and synthesis of in-depth written pedagogical critiques.'}
+            </p>
+          </div>
+
+          <div className="border border-[#000000] p-6 bg-[#000000] text-[#ffffff]">
+            <span className="font-mono text-xs text-white/70 block mb-1">ЭТАП 04</span>
+            <h3 className="text-lg font-serif text-[#ffffff] mb-2">
+              {locale === 'ru' ? 'Итоги и дипломы' : 'Results & Diplomas'}
+            </h3>
+            <p className="text-xs font-serif text-white/80">
+              {locale === 'ru'
+                ? '30 июня: официальный публичный реестр и открытие доступа к дипломам высокой печати с QR-верификацией.'
+                : 'June 30: official public results registry and issuance of cryptographic QR-verified diplomas.'}
+            </p>
           </div>
         </div>
       </section>
