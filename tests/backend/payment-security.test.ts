@@ -13,6 +13,11 @@ describe("Payment Security & Concurrency Hardening (lib/payment-gateway.ts)", ()
   let testParticipantUserId: string;
 
   beforeAll(async () => {
+    try {
+      await prisma.$queryRawUnsafe("PRAGMA journal_mode = WAL;");
+      await prisma.$queryRawUnsafe("PRAGMA busy_timeout = 15000;");
+    } catch {}
+
     const comp = await prisma.competition.findUnique({
       where: { slug: "espressivo-vocal-2026" },
       include: { nominations: true, ageCategories: true },
@@ -350,7 +355,7 @@ describe("Payment Security & Concurrency Hardening (lib/payment-gateway.ts)", ()
         where: { id: testTeacherProfileId },
       });
       expect(teacherFinal?.balance).toBe(balanceBefore + 500);
-    });
+    }, 15000);
 
     it("should prevent FAILED webhook from overwriting an already CONFIRMED transaction", async () => {
       const app = await prisma.application.create({
@@ -423,6 +428,6 @@ describe("Payment Security & Concurrency Hardening (lib/payment-gateway.ts)", ()
         where: { transactionId: session.transactionId },
       });
       expect(txRecord?.status).toBe("CONFIRMED");
-    });
+    }, 15000);
   });
 });

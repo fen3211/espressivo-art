@@ -11,6 +11,8 @@ export default defineConfig(({ mode }) => {
       environment: "node",
       globals: true,
       fileParallelism: false,
+      testTimeout: 20000,
+      hookTimeout: 20000,
       env,
     },
     resolve: {

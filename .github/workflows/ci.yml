@@ -55,6 +55,9 @@ jobs:
       - name: Push Prisma SQLite Schema
         run: npx prisma db push --skip-generate
 
+      - name: Configure SQLite WAL & Busy Timeout
+        run: node -e "const { PrismaClient } = require('@prisma/client'); const p = new PrismaClient(); p.\$queryRawUnsafe('PRAGMA journal_mode = WAL; PRAGMA busy_timeout = 15000;').then(() => p.\$disconnect());"
+
       - name: Seed Test Database
         run: node prisma/seed.js
 
