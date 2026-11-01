@@ -101,7 +101,7 @@
 | **Генерация PDF & QR** | Векторный движок `pdfkit` + встроенные шрифты SIL OFL Noto Serif + генератор реальных QR-кодов `qrcode` |
 | **Локализация** | Синхронная система словарей `lib/i18n/dictionaries.ts` (13 разделов, 520+ ключей на язык, RU/EN с полным паритетом) |
 | **Юридический комплаенс** | Комплект документов `docs/legal/` (152-ФЗ, 156-ФЗ, 69-ФЗ, 54-ФЗ, 422-ФЗ, GDPR Art. 8) с грифом DRAFT и опросником для юриста |
-| **Тестирование** | Vitest 3.2 (90 passed тестов в 8 сьютах: auth, ledger 20%, jury PII, certificates PDF & QR, routes, security, i18n, critical remediation) |
+| **Тестирование** | Vitest 3.2 (129 passed тестов в 11 сьютах: auth, ledger, jury isolation, blind audition, certificates, security, i18n, critical remediation, payment security, rate limiter) |
 | **Линтинг и CI/CD** | ESLint 8.57, TypeScript 5.8 (Strict), GitHub Actions CI (.github/workflows/ci.yml) |
 | **Иконки** | Lucide React |
 
@@ -156,8 +156,10 @@
 
 > **Защита безопасности в production**:
 > - Кнопки быстрого входа в 1 клик на `/login` отображаются **только в development/staging** окружениях (`NODE_ENV !== 'production'`).
-> - В production вход под демонстрационными email блокируется на уровне API, если не задана переменная `ENABLE_DEMO_ACCOUNTS="true"`.
-> - Все эндпоинты авторизации защищены in-memory rate-limiter (не более 5 неудачных попыток входа за 10 минут, после чего следует блокировка на 15 минут с кодом 429).
+> - В production вход под демонстрационными email **безусловно заблокирован** на уровне API без возможности отмены через переменные окружения. Ответ унифицирован (`401 INVALID_CREDENTIALS`, constant-time bcrypt), что предотвращает утечку существования аккаунтов.
+> - Все эндпоинты авторизации защищены распределённым `RateLimiter` (`lib/rate-limiter.ts`) с поддержкой Upstash/Redis, защитой от спуфинга `X-Forwarded-For` и политикой **Fail-Closed** (HTTP 503) при отсутствии хранилища в production.
+> - Члены жюри аппаратно ограничены режимом **Blind Audition**: сервер возвращает `videoUrl: null`, в DOM монтируется исключительно аудиоэлемент, переключение режима в UI заблокировано.
+> - Публичная верификация дипломов строго изолирует ПДн несовершеннолетних (ст. 10.1 152-ФЗ): имя и баллы не раскрываются без отдельного согласия законного представителя.
 > - Seed-скрипт базы данных `prisma/seed.js` блокирует запуск в production без флага `ALLOW_PROD_SEED="true"`.
 
 ---
@@ -168,7 +170,7 @@
 ```bash
 npm test
 ```
-*Результат: **90 тестов** в 8 тестовых сьютах (Auth, Ledger 20%, Jury PII Isolation, Certificates PDF & QR, API Routes, Security Audit & RBAC, i18n Key Parity, Critical Remediation) успешно выполняются в Vitest 3.2.*
+*Результат: **129 тестов** в 11 тестовых сьютах (Auth, Ledger 20%, Jury PII Isolation, Blind Audition, Certificates PDF & QR, API Routes, Security Audit & RBAC, i18n Key Parity, Critical Remediation, Payment Security CAS, Rate Limiter Anti-Spoofing) успешно выполняются в Vitest 3.2.*
 
 ### Статическая проверка типов TypeScript
 ```bash
@@ -194,13 +196,13 @@ npm run build
 *Результат: Успешная компиляция всех 49 статических и динамических маршрутов Next.js без ошибок.*
 
 ### Непрерывная интеграция (CI/CD)
-Проект снабжен пайплайном GitHub Actions (`.github/workflows/ci.yml`), выполняющим при каждом push и pull request в ветки `master` и `main`:
+Проект снабжен пайплайном GitHub Actions (`.github/workflows/ci.yml`), выполняющим при каждом push (ветки `master`, `fix/**`, `feat/**`, `security/**`) и pull request:
 1. Установку зависимостей `npm ci`.
 2. Валидацию и генерацию Prisma Client (`prisma validate`, `prisma generate`).
 3. Развертывание тестовой SQLite базы (`prisma db push`, `node prisma/seed.js`).
 4. Линтинг (`npm run lint`).
 5. Проверку типов TypeScript (`npx tsc --noEmit`).
-6. Полный прогон всех 90 тестов Vitest (`npm test`).
+6. Полный прогон всех 129 тестов Vitest (`npm test`).
 7. Сборку Next.js (`npm run build`).
 
 ---

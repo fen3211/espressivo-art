@@ -39,10 +39,10 @@
 ### Сводные показатели прогона
 | Метрика | Значение | Примечание |
 |---|---|---|
-| **Всего автоматизированных тестов** | **90** | Полное покрытие безопасности, бизнес-правил и регрессий |
-| **Успешно пройденных тестов** | **90 (100%)** | 0 падений, 0 пропусков, 0 flaky |
-| **Тестовых наборов (Test Suites)** | **8 файлов** | `tests/backend/*.test.ts` |
-| **Время выполнения полного сьюта** | **~6.8 с** | Параллельное исполнение Vitest 3.2 |
+| **Всего автоматизированных тестов** | **129** | Полное покрытие безопасности, бизнес-правил, атак и регрессий |
+| **Успешно пройденных тестов** | **129 (100%)** | 0 падений, 0 пропусков, 0 flaky |
+| **Тестовых наборов (Test Suites)** | **11 файлов** | `tests/backend/*.test.ts` |
+| **Время выполнения полного сьюта** | **~8.2 с** | Параллельное исполнение Vitest 3.2 |
 | **Production Build (`next build`)** | **Exit code 0** | 49 маршрутов (18 статических SSG + 31 динамический SSR/API) |
 | **Strict TypeScript Check (`tsc --noEmit`)** | **0 ошибок** | Полная типобезопасность, строгий режим |
 | **ESLint Check (`npm run lint`)** | **0 ошибок** | Полная проверка синтаксиса и импортов |
@@ -73,14 +73,17 @@
 
 ```mermaid
 graph TD
-    A["espressivo ART Test Suite - 90 Tests"] --> B["i18n & 5-Role Matrix: 10 tests"]
+    A["espressivo ART Test Suite - 129 Tests"] --> B["i18n & 5-Role Matrix: 10 tests"]
     A --> C["Auth & Sessions: 7 tests"]
     A --> D["Payments & Ledger: 4 tests"]
     A --> E["Jury & Blind Audition: 5 tests"]
-    A --> F["Certificates & High-Print QR: 6 tests"]
+    A --> F["Certificates & High-Print QR: 7 tests"]
     A --> G["API Routes Integration: 18 tests"]
     A --> H["Security & RBAC Audit: 23 tests"]
-    A --> I["Critical Remediation: 17 tests"]
+    A --> I["Critical Remediation: 19 tests"]
+    A --> J["Payment Security CAS: 8 tests"]
+    A --> K["Blind Audition & Demo Auth: 9 tests"]
+    A --> L["Rate Limiter & Anti-Spoofing: 19 tests"]
 ```
 
 ### 3.1. i18n & Parity Suite (`tests/backend/i18n.test.ts` — 10 тестов)
@@ -223,19 +226,22 @@ graph TD
 
  RUN  v3.2.7 D:/Projects/espressivo-art
 
- ✓ tests/backend/certificates.test.ts (6 tests) 448ms
- ✓ tests/backend/critical-remediation.test.ts (17 tests) 420ms
- ✓ tests/backend/api-routes.test.ts (18 tests) 382ms
- ✓ tests/backend/security-audit.test.ts (23 tests) 311ms
- ✓ tests/backend/auth.test.ts (7 tests) 224ms
- ✓ tests/backend/payment-ledger.test.ts (4 tests) 116ms
- ✓ tests/backend/jury-pii-isolation.test.ts (5 tests) 99ms
- ✓ tests/backend/i18n.test.ts (10 tests) 40ms
+ ✓ tests/backend/certificates.test.ts (7 tests) 428ms
+ ✓ tests/backend/critical-remediation.test.ts (19 tests) 426ms
+ ✓ tests/backend/api-routes.test.ts (18 tests) 411ms
+ ✓ tests/backend/security-audit.test.ts (23 tests) 284ms
+ ✓ tests/backend/auth.test.ts (7 tests) 254ms
+ ✓ tests/backend/payment-security.test.ts (8 tests) 203ms
+ ✓ tests/backend/payment-ledger.test.ts (4 tests) 113ms
+ ✓ tests/backend/jury-pii-isolation.test.ts (5 tests) 79ms
+ ✓ tests/backend/blind-audition-and-demo-security.test.ts (9 tests) 76ms
+ ✓ tests/backend/i18n.test.ts (10 tests) 33ms
+ ✓ tests/backend/rate-limiter.test.ts (19 tests) 16ms
 
- Test Files  8 passed (8)
-      Tests  90 passed (90)
-   Start at  05:41:52
-   Duration  6.80s (transform 309ms, setup 0ms, collect 2.19s, tests 2.04s, environment 1ms, prepare 1.07s)
+ Test Files  11 passed (11)
+      Tests  129 passed (129)
+   Start at  12:32:58
+   Duration  8.21s (transform 375ms, setup 0ms, collect 2.68s, tests 2.32s, environment 2ms, prepare 1.27s)
 ```
 
 ### 6.2. Проверка схемы Prisma (`npx prisma validate`)
@@ -267,7 +273,7 @@ Exit code: 0 (0 errors, warnings only for <img> vs <Image />)
    - Environments: .env
 
    Creating an optimized production build ...
- ✓ Compiled successfully in 7.6s
+ ✓ Compiled successfully in 5.1s
    Collecting page data ...
  ✓ Generating static pages (49/49)
    Finalizing page optimization ...
@@ -283,9 +289,11 @@ Total First Load JS: 103 kB
 
 ## 7. Заключение и вердикт качества
 
-Все поставленные задачи спринта критических исправлений успешно решены:
-- Покрытие тестами составляет **90 тестов** (8 файлов), 100% сценариев выполняются успешно.
-- Уязвимости P0 в платежном шлюзе, демо-аккаунтах, терминале жюри и защите ПДн полностью устранены и покрыты регрессионными тестами.
-- Документы приведены в соответствие со статусом: гриф `DRAFT` на правовых актах и опросник для юриста.
+Все требования финального спринта усиления безопасности успешно выполнены:
+- Покрытие тестами расширено до **129 тестов** (11 файлов), 100% сценариев выполняются успешно.
+- Реализованы безусловные запреты mock-платежей и demo-аккаунтов в `production`.
+- Внедрен серверный инвариант слепого судейства (Blind Audition) с защищенным аудио-роутом.
+- Развернута архитектура `RateLimiter` с защитой от спуфинга IP и политикой Fail-Closed.
+- Обеспечено строгое соблюдение ст. 10.1 152-ФЗ при публичной проверке дипломов.
 - Сборка, компиляция типов и линтинг проходят чисто (Exit code 0).
-- **Итоговый вердикт:** Платформа переведена в статус **STAGING READY / MVP** и полностью готова к проведению сквозного пользовательского приёмочного тестирования.
+- **Итоговый вердикт:** Платформа подтверждена в статусе **STAGING READY / MVP** и полностью готова к проведению сквозного пользовательского приёмочного тестирования.

@@ -1,6 +1,22 @@
 # espressivo ART — Team Status & Orchestration Ledger
 
-## Sprint 2: Critical Remediation & Production Readiness (Current)
+## Sprint 3: Final Security & Production Hardening (Current)
+**Ветка:** `fix/security-checkout-i18n-jury-privacy`  
+**Резервная ветка:** `backup/pre-final-security-remediation`  
+**Статус готовности платформы:** `STAGING READY / MVP` (129 тестов passed, 49 маршрутов скомпилировано, 0 ошибок типов, 0 ошибок линтера)
+
+| Агент / Роль | Зона ответственности и задачи | Статус | Результаты и верификация | Блокеры | Следующие действия |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Director / Lead Orchestrator** | Координация мультиагентной команды, триаж задач, сводный аудит | `SUCCESS` | Управление 5 профильными субагентами, интеграция изменений, создание `SECURITY.md`, запуск всех проверок | Нет | Финальный отчёт и обновление PR |
+| **Payment Security Specialist** | Аудит платежного шлюза, HMAC, валюта, race conditions | `SUCCESS` | Безусловный запрет mock в production, валюта обязательна в HMAC, атомарный CAS `updateMany` (5 конкурентных вебхуков $\to$ ровно 1 начисление) | Нет | Договор с эквайером в Phase 2 |
+| **Application Security Auditor** | Независимый аудит OWASP/ASVS, демо-аккаунты, Blind Audition, IDOR | `SUCCESS` | Безусловный запрет демо-аккаунтов в prod, dummy bcrypt (защита от enumeration), серверный Blind Audition (`videoUrl: null`, защищенный `/audio`) | Нет | Готово |
+| **Russian Data Protection Specialist** | Аудит 152-ФЗ, 149-ФЗ, согласия ст. 10.1, минимизация ПДн | `SUCCESS` | Сокрытие имени и `totalScore` в публичной верификации дипломов без согласия ст. 10.1 152-ФЗ; разделение согласий на обработку и распространение | Нет | Юридическая экспертиза |
+| **Infrastructure Security Engineer** | Rate Limiting, Anti-Spoofing, харденинг CI/CD, deployment runbook | `SUCCESS` | Реализован `lib/rate-limiter.ts` с Upstash/Redis, Fail-Closed (HTTP 503), защита от спуфинга `X-Forwarded-For`, триггеры CI `fix/**`, `docs/DEPLOYMENT_GUIDE.md` | Нет | Конфигурация Redis в prod |
+| **QA Automation Engineer** | Автоматизация регрессионных, security и конкурентных тестов | `SUCCESS` | Разработаны тесты в 11 тест-сьютах, 129/129 тестов passed (100%), покрытие всех краевых сценариев и атак | Нет | Готово |
+
+---
+
+## Sprint 2: Critical Remediation & Production Readiness (Previous)
 **Ветка:** `fix/security-checkout-i18n-jury-privacy`  
 **Резервная ветка:** `backup/pre-security-remediation`  
 **Статус готовности:** `STAGING READY / MVP` (90 тестов passed, 49 маршрутов скомпилировано, 0 ошибок типов)
