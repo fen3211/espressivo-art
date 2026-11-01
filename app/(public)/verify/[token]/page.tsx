@@ -43,7 +43,7 @@ export default async function CertificateVerificationPage(props: VerifyPageProps
     <div className="max-w-[1440px] mx-auto px-6 sm:px-10 py-16 sm:py-24">
       <div className="max-w-xl mx-auto">
         {/* Editorial Frame */}
-        <div className="border border-[#000000] p-8 sm:p-12 bg-[#faf8f5] shadow-sm relative">
+        <div className="border border-[#000000] p-8 sm:p-12 bg-[#faf8f5] relative">
           {/* Subtle corner accents */}
           <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-[#a38344]" />
           <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-[#a38344]" />
@@ -66,7 +66,7 @@ export default async function CertificateVerificationPage(props: VerifyPageProps
           {isValid && certificate ? (
             <div className="py-8 space-y-6">
               {/* Verified Status Banner */}
-              <div className="p-4 rounded border border-emerald-600 bg-emerald-50 text-emerald-900 flex items-center gap-3">
+              <div className="p-4 border border-emerald-600 bg-emerald-50 text-emerald-900 flex items-center gap-3">
                 <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
                 <div className="text-xs font-sans">
                   <div className="font-bold uppercase tracking-wider">Подлинный документ</div>
@@ -148,7 +148,7 @@ export default async function CertificateVerificationPage(props: VerifyPageProps
               </div>
 
               {/* 152-FZ Privacy Note */}
-              <div className="p-3 bg-[#f0eae1] rounded text-[11px] font-sans text-[#666666] flex items-start gap-2">
+              <div className="p-3 bg-[#f0eae1] text-[11px] font-sans text-[#666666] flex items-start gap-2">
                 <ShieldCheck className="w-4 h-4 text-[#a38344] shrink-0 mt-0.5" />
                 <span>
                   {hasPublicConsent
@@ -159,7 +159,7 @@ export default async function CertificateVerificationPage(props: VerifyPageProps
             </div>
           ) : (
             <div className="py-8 space-y-6 text-center">
-              <div className="p-4 rounded border border-red-500 bg-red-50 text-red-900 flex items-center gap-3 text-left">
+              <div className="p-4 border border-red-500 bg-red-50 text-red-900 flex items-center gap-3 text-left">
                 <AlertTriangle className="w-6 h-6 text-red-600 shrink-0" />
                 <div className="text-xs font-sans">
                   <div className="font-bold uppercase tracking-wider">Диплом не найден</div>

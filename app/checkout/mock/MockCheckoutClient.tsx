@@ -169,7 +169,10 @@ export function MockCheckoutClient({
   // 2. Error or Missing Data UI
   if (!data || errorCode) {
     return (
-      <div className="min-h-screen bg-[#07070b] text-[#fcfcfc] flex items-center justify-center p-4">
+      <div
+        data-theme="cinema"
+        className="theme-cinema min-h-screen bg-[#07070b] text-[#fcfcfc] flex items-center justify-center p-4 font-sans"
+      >
         <div className="max-w-md w-full bg-[#11111a] border border-[#33334d] rounded-2xl p-8 text-center space-y-6 shadow-2xl">
           <div className="w-14 h-14 mx-auto rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
             <AlertTriangle className="w-7 h-7" />
@@ -211,7 +214,10 @@ export function MockCheckoutClient({
     locale === 'ru' ? data.application.competitionTitleRu : data.application.competitionTitleEn;
 
   return (
-    <div className="min-h-screen bg-[#07070b] text-[#fcfcfc] flex flex-col justify-between py-12 px-4 sm:px-6 lg:px-8 selection:bg-[#6199f6]/30">
+    <div
+      data-theme="cinema"
+      className="theme-cinema min-h-screen bg-[#07070b] text-[#fcfcfc] flex flex-col justify-between py-12 px-4 sm:px-6 lg:px-8 selection:bg-[#6199f6]/30 font-sans"
+    >
       {/* Background Ambience */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[-15%] left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-gradient-to-b from-[#6199f6]/10 to-transparent blur-3xl opacity-70" />

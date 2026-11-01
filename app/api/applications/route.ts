@@ -181,7 +181,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Конкурс не найден" }, { status: 404 });
     }
 
-    const nomination = await prisma.nomination.findUnique({ where: { id: nominationId } });
+    let nomination = await prisma.nomination.findUnique({ where: { id: nominationId } }).catch(() => null);
+    if (!nomination) {
+      nomination = await prisma.nomination.findFirst({
+        where: { competitionId, code: nominationId },
+      });
+    }
     if (!nomination) {
       return NextResponse.json({ error: "Номинация не найдена" }, { status: 404 });
     }
@@ -192,7 +197,12 @@ export async function POST(req: Request) {
       );
     }
 
-    const ageCategory = await prisma.ageCategory.findUnique({ where: { id: ageCategoryId } });
+    let ageCategory = await prisma.ageCategory.findUnique({ where: { id: ageCategoryId } }).catch(() => null);
+    if (!ageCategory) {
+      ageCategory = await prisma.ageCategory.findFirst({
+        where: { competitionId, code: ageCategoryId },
+      });
+    }
     if (!ageCategory) {
       return NextResponse.json({ error: "Возрастная категория не найдена" }, { status: 404 });
     }

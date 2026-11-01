@@ -440,7 +440,7 @@ describe("Comprehensive Security & RBAC Audit (espressivo ART)", () => {
       // 1. Create application with consentPublicStream = false
       const nonStreamApp = await prisma.application.create({
         data: {
-          code: `EXP-NS-${Date.now().toString().slice(-4)}`,
+          code: `EXP-NS-${Date.now()}-${Math.floor(Math.random() * 100000)}`,
           userId: participantAUser.id,
           competitionId: testCompetitionId,
           nominationId: testNominationId,

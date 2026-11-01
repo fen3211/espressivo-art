@@ -286,8 +286,8 @@ export default function RulesPage() {
             </h2>
             <p className="text-base leading-relaxed mb-4">
               {locale === 'ru'
-                ? 'Платформа espressivo ART ценит вклад педагогов в подготовку юных дарований. За каждую оплаченную заявку, поданную по рекомендации педагога, начисляется партнерское вознаграждение в размере 20% от регистрационного взноса (500 ₽ с каждого сольного участия).'
-                : 'espressivo ART honors the dedication of music pedagogues. For each completed entry submitted through a teacher recommendation, a 20% royalty is credited directly to the teacher account balance.'}
+                ? 'Платформа espressivo ART ценит вклад педагогов в подготовку юных дарований. За каждую оплаченную заявку, поданную по рекомендации педагога, начисляется партнерское вознаграждение в размере 20% от регистрационного взноса: 500 ₽ с каждого сольного участия (взнос 2 500 ₽) и 900 ₽ с каждого ансамбля (взнос 4 500 ₽).'
+                : 'espressivo ART honors the dedication of music pedagogues. For each completed entry submitted through a teacher recommendation, a 20% royalty is credited directly to the teacher account balance: 500 ₽ per solo entry (2,500 ₽ fee) and 900 ₽ per vocal ensemble (4,500 ₽ fee).'}
             </p>
             <p className="text-base leading-relaxed">
               {locale === 'ru'

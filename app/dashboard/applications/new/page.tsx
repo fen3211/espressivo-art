@@ -25,6 +25,38 @@ export default function NewApplicationPage() {
   const { locale, dict } = useLanguage();
 
   const [step, setStep] = useState<number>(1);
+  const [competitionId, setCompetitionId] = useState<string>('');
+  const [nominationOptions, setNominationOptions] = useState<{ value: string; label: string }[]>([]);
+  const [ageCategoryOptions, setAgeCategoryOptions] = useState<{ value: string; label: string }[]>([]);
+
+  React.useEffect(() => {
+    async function loadComp() {
+      try {
+        const res = await fetch('/api/public/competitions/espressivo-vocal-2026');
+        if (res.ok) {
+          const c = await res.json();
+          setCompetitionId(c.id);
+          if (c.nominations && c.nominations.length > 0) {
+            setNominationOptions(c.nominations.map((n: any) => ({
+              value: n.id,
+              label: locale === 'ru' ? n.titleRu : n.titleEn,
+            })));
+            setNomination(c.nominations[0].id);
+          }
+          if (c.ageCategories && c.ageCategories.length > 0) {
+            setAgeCategoryOptions(c.ageCategories.map((a: any) => ({
+              value: a.id,
+              label: `${locale === 'ru' ? a.titleRu : a.titleEn} (${a.minAge}–${a.maxAge} ${locale === 'ru' ? 'лет' : 'yrs'})`,
+            })));
+            setAgeCategory(c.ageCategories[0].id);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load competition data:', err);
+      }
+    }
+    loadComp();
+  }, [locale]);
   const [loading, setLoading] = useState<boolean>(false);
 
   // Form State

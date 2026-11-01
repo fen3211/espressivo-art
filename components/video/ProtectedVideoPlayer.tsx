@@ -207,7 +207,7 @@ export function ProtectedVideoPlayer({
                 : 'Visual stream is sanitized server-side to ensure academic objectivity. Please evaluate technique, tone, and musicianship purely by sound.'}
             </p>
             <audio
-              src={audioUrl}
+              src={audioUrl?.endsWith('/stream') ? audioUrl : `${audioUrl}/stream`}
               controls
               controlsList="nodownload"
               className="w-full max-w-sm accent-[#6199f6]"

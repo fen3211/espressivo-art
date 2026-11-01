@@ -66,11 +66,17 @@ export function Footer() {
             <span className="text-[10px] uppercase font-bold tracking-[0.038em] text-[#000000] mb-2">
               {locale === 'ru' ? 'Правовая информация' : 'Compliance & Legal'}
             </span>
-            <span className="text-xs text-[#121212]">
-              {locale === 'ru'
-                ? 'Обработка персональных данных несовершеннолетних участников в строгом соответствии с 152-ФЗ и GDPR.'
-                : 'Processing of minor participant personal data in strict compliance with 152-FZ and GDPR standards.'}
-            </span>
+            <div className="flex flex-col gap-1.5 text-xs">
+              <Link href="/terms" className="text-[#121212] hover:text-[#000000] hover:underline">
+                {locale === 'ru' ? 'Публичная оферта и правила' : 'Terms of Service & Offer'}
+              </Link>
+              <Link href="/privacy" className="text-[#121212] hover:text-[#000000] hover:underline">
+                {locale === 'ru' ? 'Политика конфиденциальности (152-ФЗ)' : 'Privacy Policy (152-FZ / GDPR)'}
+              </Link>
+              <Link href="/legal/consent" className="text-[#121212] hover:text-[#000000] hover:underline">
+                {locale === 'ru' ? 'Согласие законного представителя' : 'Parental Minor Consent'}
+              </Link>
+            </div>
             <div className="mt-2 text-xs text-[#121212]">
               Email: <span className="font-mono text-[#000000]">director@espressivo-art.com</span>
             </div>

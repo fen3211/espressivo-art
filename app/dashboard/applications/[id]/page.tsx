@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useLanguage } from '@/components/LanguageContext';
@@ -17,6 +17,27 @@ export default function ApplicationDetailPage() {
 
   const isEvaluated = id === 'app-002';
   const isPendingPayment = id === 'app-003';
+  const [payLoading, setPayLoading] = useState(false);
+
+  const handlePay = async () => {
+    setPayLoading(true);
+    try {
+      const res = await fetch('/api/payments/create-session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ applicationId: id }),
+      });
+      const data = await res.json();
+      if (data.paymentUrl) {
+        window.location.href = data.paymentUrl;
+        return;
+      }
+    } catch (e) {
+      console.error('Payment error:', e);
+    } finally {
+      setPayLoading(false);
+    }
+  };
 
   const appData = {
     id,
@@ -89,7 +110,8 @@ export default function ApplicationDetailPage() {
               variant="iris-action"
               size="md"
               iconLeft={<CreditCard className="w-4 h-4" />}
-              onClick={() => alert(locale === 'ru' ? 'Переход к безопасному шлюзу оплаты 2 500 ₽' : 'Redirecting to payment gateway 2,500 ₽')}
+              loading={payLoading}
+              onClick={handlePay}
             >
               {locale === 'ru' ? 'Оплатить взнос (2 500 ₽)' : 'Pay Entry Fee (2,500 ₽)'}
             </Button>

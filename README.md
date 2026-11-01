@@ -4,6 +4,11 @@
 
 Архитектура платформы спроектирована и реализована командой специализированных AI-инженеров под руководством главного AI Development Director в строгом соответствии с техническим заданием и двумя независимыми дизайн-системами Refero.
 
+> 🎯 **Kwork Project 3270640: Демонстрационная готовность MVP (Client Demo Ready)**:
+> - **Сквозной сценарий демонстрации**: подробный пошаговый гид по 4 ролям с тестовыми данными см. в [`docs/DEMO_GUIDE.md`](docs/DEMO_GUIDE.md).
+> - **Матрица соответствия требованиям ТЗ**: полный анализ выполнения всех 33 критериев заказчика см. в [`docs/KWORK_REQUIREMENTS_MATRIX.md`](docs/KWORK_REQUIREMENTS_MATRIX.md).
+> - **Отчет работы AI-команды**: протоколы аудита и статус спринтов см. в [`docs/TEAM_STATUS.md`](docs/TEAM_STATUS.md).
+
 ---
 
 ## 1. Два строго разделённых визуальных мира
@@ -101,7 +106,7 @@
 | **Генерация PDF & QR** | Векторный движок `pdfkit` + встроенные шрифты SIL OFL Noto Serif + генератор реальных QR-кодов `qrcode` |
 | **Локализация** | Синхронная система словарей `lib/i18n/dictionaries.ts` (13 разделов, 520+ ключей на язык, RU/EN с полным паритетом) |
 | **Юридический комплаенс** | Комплект документов `docs/legal/` (152-ФЗ, 156-ФЗ, 69-ФЗ, 54-ФЗ, 422-ФЗ, GDPR Art. 8) с грифом DRAFT и опросником для юриста |
-| **Тестирование** | Vitest 3.2 (129 passed тестов в 11 сьютах: auth, ledger, jury isolation, blind audition, certificates, security, i18n, critical remediation, payment security, rate limiter) |
+| **Тестирование** | Vitest 3.2 (145 passed тестов в 12 сьютах: auth, ledger, jury isolation, blind audition, audio stream, certificates, security, i18n, critical remediation, payment security, rate limiter) |
 | **Линтинг и CI/CD** | ESLint 8.57, TypeScript 5.8 (Strict), GitHub Actions CI (.github/workflows/ci.yml) |
 | **Иконки** | Lucide React |
 
@@ -170,7 +175,7 @@
 ```bash
 npm test
 ```
-*Результат: **129 тестов** в 11 тестовых сьютах (Auth, Ledger 20%, Jury PII Isolation, Blind Audition, Certificates PDF & QR, API Routes, Security Audit & RBAC, i18n Key Parity, Critical Remediation, Payment Security CAS, Rate Limiter Anti-Spoofing) успешно выполняются в Vitest 3.2.*
+*Результат: **145 тестов** в 12 тестовых сьютах (Auth, Ledger 20%, Jury PII Isolation, Blind Audition, Audio Streaming Range 206, Certificates PDF & QR, API Routes, Security Audit & RBAC, i18n Key Parity, Critical Remediation, Payment Security CAS, Rate Limiter Anti-Spoofing) успешно выполняются в Vitest 3.2.*
 
 ### Статическая проверка типов TypeScript
 ```bash
@@ -193,7 +198,7 @@ npx prisma validate
 ```bash
 npm run build
 ```
-*Результат: Успешная компиляция всех 49 статических и динамических маршрутов Next.js без ошибок.*
+*Результат: Успешная компиляция всех 55 статических и динамических маршрутов Next.js без ошибок.*
 
 ### Непрерывная интеграция (CI/CD)
 Проект снабжен пайплайном GitHub Actions (`.github/workflows/ci.yml`), выполняющим при каждом push (ветки `master`, `fix/**`, `feat/**`, `security/**`) и pull request:
@@ -202,7 +207,7 @@ npm run build
 3. Развертывание тестовой SQLite базы (`prisma db push`, `node prisma/seed.js`).
 4. Линтинг (`npm run lint`).
 5. Проверку типов TypeScript (`npx tsc --noEmit`).
-6. Полный прогон всех 129 тестов Vitest (`npm test`).
+6. Полный прогон всех 145 тестов Vitest (`npm test`).
 7. Сборку Next.js (`npm run build`).
 
 ---
@@ -239,8 +244,11 @@ espressivo-art/
 ├── prisma/
 │   ├── schema.prisma             # DDL-схема SQLite / PostgreSQL (13 моделей)
 │   └── seed.js                   # Наполнитель тестовых данных
-├── tests/backend/                # 51 юнит- и интеграционный тест Vitest
+├── tests/backend/                # 145 юнит-, интеграционных и e2e тестов Vitest
 └── docs/                         # Полный комплект проектной документации
+    ├── DEMO_GUIDE.md             # Сквозной сценарий демонстрации платформы (Kwork 3270640)
+    ├── KWORK_REQUIREMENTS_MATRIX.md # Матрица соответствия техническому заданию
+    ├── TEAM_STATUS.md            # Отчет работы AI-команды и статус спринтов
     ├── PRODUCT_REQUIREMENTS.md   # Детальная спецификация требований и ролевая матрица
     ├── USER_FLOWS.md             # Пошаговые сценарии пользователей и матрица краевых случаев
     ├── OPEN_QUESTIONS.md         # Анализ эквайринга, налогообложения и дорожная карта

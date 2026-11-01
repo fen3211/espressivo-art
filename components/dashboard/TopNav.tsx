@@ -4,14 +4,15 @@ import React from 'react';
 import Link from 'next/link';
 import { useLanguage } from '@/components/LanguageContext';
 import { UserRole } from './Sidebar';
-import { Bell, Shield } from 'lucide-react';
+import { Bell, Shield, Menu } from 'lucide-react';
 
 export interface TopNavProps {
   role: UserRole;
   pageTitle?: string;
+  onToggleMobileSidebar?: () => void;
 }
 
-export function TopNav({ role, pageTitle }: TopNavProps) {
+export function TopNav({ role, pageTitle, onToggleMobileSidebar }: TopNavProps) {
   const { locale, setLocale, dict } = useLanguage();
 
   const roleName: Record<UserRole, string> = {
@@ -22,14 +23,23 @@ export function TopNav({ role, pageTitle }: TopNavProps) {
   };
 
   return (
-    <header className="h-16 shrink-0 bg-[#040407]/90 backdrop-blur-md border-b border-[#2a2a32] px-6 flex items-center justify-between text-sm select-none z-30">
+    <header className="h-16 shrink-0 bg-[#040407]/90 backdrop-blur-md border-b border-[#2a2a32] px-4 sm:px-6 flex items-center justify-between text-sm select-none z-30">
       {/* Left: Section identifier / Eyebrow */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
+        {onToggleMobileSidebar && (
+          <button
+            onClick={onToggleMobileSidebar}
+            className="lg:hidden min-w-[36px] min-h-[36px] p-1.5 rounded-md text-[#a3a3b3] hover:text-[#fcfcfc] hover:bg-[#181826] flex items-center justify-center cursor-pointer transition-colors mr-1"
+            aria-label="Toggle navigation"
+          >
+            <Menu className="w-5 h-5 text-[#6199f6]" />
+          </button>
+        )}
         <span className="text-[11px] font-mono uppercase tracking-wider text-[#6199f6]">
           {role}
         </span>
         <span className="text-[#2a2a32]">/</span>
-        <h1 className="text-sm font-medium text-[#fcfcfc] truncate">
+        <h1 className="text-sm font-medium text-[#fcfcfc] truncate max-w-[160px] sm:max-w-none">
           {pageTitle || dict.common.dashboard}
         </h1>
       </div>

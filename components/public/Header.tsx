@@ -31,7 +31,7 @@ export function Header() {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden lg:flex items-center gap-7">
+        <nav className="hidden lg:flex items-center gap-4 xl:gap-7">
           {navLinks.map((item) => {
             const isActive = pathname === item.href;
             return (
@@ -51,7 +51,7 @@ export function Header() {
         </nav>
 
         {/* Right Actions: Lang + Auth CTA */}
-        <div className="hidden lg:flex items-center gap-5">
+        <div className="hidden lg:flex items-center gap-3 xl:gap-5">
           {/* Language Switcher */}
           <div className="flex items-center text-[10px] font-sans uppercase font-bold tracking-wider text-[#000000]">
             <button
@@ -87,10 +87,10 @@ export function Header() {
           </Link>
         </div>
 
-        {/* Mobile Hamburger Button */}
+        {/* Mobile Hamburger Button (44x44px touch target) */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="lg:hidden flex flex-col justify-center items-center w-8 h-8 gap-1.5 cursor-pointer"
+          className="lg:hidden min-w-[44px] min-h-[44px] flex flex-col justify-center items-center gap-1.5 cursor-pointer p-2"
           aria-label={locale === 'ru' ? 'Меню навигации' : 'Navigation Menu'}
         >
           <span

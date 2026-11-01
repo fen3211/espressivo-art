@@ -70,11 +70,10 @@ export default function NominationsPage() {
   ];
 
   const ageGroups = [
-    { code: 'GROUP-0', nameRu: 'Дебют', nameEn: 'Debut', ageRu: '6–8 полных лет', ageEn: '6–8 years', maxDur: '3:30' },
-    { code: 'GROUP-I', nameRu: 'Младшая', nameEn: 'Junior', ageRu: '9–11 полных лет', ageEn: '9–11 years', maxDur: '4:00' },
-    { code: 'GROUP-II', nameRu: 'Средняя', nameEn: 'Intermediate', ageRu: '12–14 полных лет', ageEn: '12–14 years', maxDur: '4:30' },
-    { code: 'GROUP-III', nameRu: 'Старшая', nameEn: 'Advanced', ageRu: '15–17 полных лет', ageEn: '15–17 years', maxDur: '5:00' },
-    { code: 'GROUP-IV', nameRu: 'Молодёжная / Мастера', nameEn: 'Youth Master', ageRu: '18–22 года', ageEn: '18–22 years', maxDur: '5:00' },
+    { code: 'CAT-A', nameRu: 'Категория A (Младшая группа)', nameEn: 'Category A (Junior)', ageRu: '5–8 полных лет', ageEn: '5–8 years', maxDur: '3:30', feeRu: '2 500 ₽ (Соло)', feeEn: '2,500 ₽ (Solo)' },
+    { code: 'CAT-B', nameRu: 'Категория B (Средняя группа)', nameEn: 'Category B (Intermediate)', ageRu: '9–12 полных лет', ageEn: '9–12 years', maxDur: '4:00', feeRu: '2 500 ₽ (Соло)', feeEn: '2,500 ₽ (Solo)' },
+    { code: 'CAT-C', nameRu: 'Категория C (Юношеская группа)', nameEn: 'Category C (Advanced)', ageRu: '13–17 полных лет', ageEn: '13–17 years', maxDur: '4:30', feeRu: '2 500 ₽ (Соло)', feeEn: '2,500 ₽ (Solo)' },
+    { code: 'CAT-D', nameRu: 'Категория D (Молодёжная / Мастера)', nameEn: 'Category D (Youth Master)', ageRu: '18–25 полных лет', ageEn: '18–25 years', maxDur: '5:00', feeRu: '2 500 ₽ (Соло) / 4 500 ₽ (Ансамбль)', feeEn: '2,500 ₽ (Solo) / 4,500 ₽ (Ens.)' },
   ];
 
   return (
@@ -155,16 +154,19 @@ export default function NominationsPage() {
             <thead>
               <tr className="border-b border-[#000000] bg-[#dedede] font-sans text-[10px] uppercase font-bold tracking-wider">
                 <th className="p-4 border-r border-[#000000]">
-                  {locale === 'ru' ? 'Код группы' : 'Group Code'}
+                  {locale === 'ru' ? 'Код категории' : 'Category Code'}
                 </th>
                 <th className="p-4 border-r border-[#000000]">
                   {locale === 'ru' ? 'Название категории' : 'Category Name'}
                 </th>
                 <th className="p-4 border-r border-[#000000]">
-                  {locale === 'ru' ? 'Возраст на дату подачи' : 'Age at Submission'}
+                  {locale === 'ru' ? 'Возраст участников' : 'Age Bracket'}
+                </th>
+                <th className="p-4 border-r border-[#000000]">
+                  {locale === 'ru' ? 'Макс. хронометраж' : 'Max Duration'}
                 </th>
                 <th className="p-4">
-                  {locale === 'ru' ? 'Макс. хронометраж' : 'Max Duration'}
+                  {locale === 'ru' ? 'Взнос за участие' : 'Entry Fee'}
                 </th>
               </tr>
             </thead>
@@ -180,8 +182,11 @@ export default function NominationsPage() {
                   <td className="p-4 text-sm border-r border-[#000000]">
                     {locale === 'ru' ? grp.ageRu : grp.ageEn}
                   </td>
-                  <td className="p-4 font-mono text-xs">
+                  <td className="p-4 font-mono text-xs border-r border-[#000000]">
                     {grp.maxDur} {locale === 'ru' ? 'мин' : 'min'}
+                  </td>
+                  <td className="p-4 font-mono text-xs font-semibold text-[#000000]">
+                    {locale === 'ru' ? grp.feeRu : grp.feeEn}
                   </td>
                 </tr>
               ))}

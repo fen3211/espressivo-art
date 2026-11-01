@@ -63,27 +63,39 @@ export default function AdminResultsCalculationPage() {
     },
   ]);
 
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
   const handleCalculate = async () => {
     setLoading(true);
+    setStatusMessage(null);
 
     try {
-      await fetch('/api/admin/results/calculate', {
+      const res = await fetch('/api/admin/calculate-results', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
       });
-    } catch {
-      // Mock submit
-    }
-
-    setTimeout(() => {
+      const resJson = await res.json();
+      if (res.ok && resJson.results && resJson.results.length > 0) {
+        setData(resJson.results.map((r: any, idx: number) => ({
+          id: String(idx + 1),
+          code: r.applicationCode,
+          participantName: r.participantName,
+          nomination: 'Академический вокал (Соло)',
+          scoreAvg: r.totalScore,
+          awardKey: r.awardDegree,
+          certificateStatus: dict.admin.results.statusGenerated,
+        })));
+        setStatusMessage(resJson.message || 'Результаты успешно рассчитаны');
+      } else {
+        setStatusMessage(resJson.message || 'Расчет завершен');
+      }
+    } catch (err) {
+      console.error('Calculation error:', err);
+    } finally {
       setLoading(false);
       setCalculated(true);
-      setData((prev) =>
-        prev.map((item) => ({
-          ...item,
-          certificateStatus: dict.admin.results.statusGenerated,
-        }))
-      );
-    }, 600);
+    }
   };
 
   const handlePublish = () => {

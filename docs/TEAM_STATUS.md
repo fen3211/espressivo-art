@@ -1,5 +1,23 @@
 # espressivo ART — Team Status & Orchestration Ledger
 
+## Sprint 4: Kwork Client Demo Readiness & E2E MVP Completion (Current)
+**Ветка:** `feat/kwork-espressivo-demo-readiness`  
+**Резервная ветка:** `backup/pre-final-security-remediation`  
+**PR #2 (Предыдущий спринт):** https://github.com/fen3211/espressivo-art/pull/2 (HEAD: `66000d5`)  
+**Статус готовности платформы:** `STAGING READY / CLIENT DEMO READY / MVP VERIFIED` (145/145 тестов passed, 55 маршрутов Next.js скомпилировано, 0 ошибок типов, 0 ошибок линтера)
+
+| Агент / Роль | Зона ответственности и задачи | Статус | Результаты и верификация | Блокеры | Следующие действия |
+| :--- | :--- | :---: | :--- | :---: | :--- |
+| **Director / Lead Orchestrator** | Управление мультиагентной командой, интеграция изменений, релиз-менеджмент | `SUCCESS` | Координация всех 17 ролей и 5 специализированных субагентов, ликвидация 8 Demo Blockers, выпуск DEMO_GUIDE.md | Нет | Демонстрация заказчику Kwork |
+| **Product Manager** (`product-manager`) | Матрица требований Kwork Project 3270640, анализ разрывов (Gap Analysis) | `SUCCESS` | Создан `docs/KWORK_REQUIREMENTS_MATRIX.md` (33 требования, 8 критических блокеров), сценарии приемки | Нет | Завершено |
+| **UI/UX Designer** (`ui-ux-designer`) | Аудит двух визуальных миров (Art vs Cinema), адаптивность, устранение AI-шаблонов | `SUCCESS` | Устранено просачивание стилей, стандартизированы взносы (2500/4500) и категории (A-D: 5-25 лет), таймлайн 4 этапов, мобильный drawer | Нет | Завершено |
+| **Backend Developer** (`backend-developer`) | Аудиостриминг с HTTP Range, связка API кабинетов, расчет результатов | `SUCCESS` | Реализован `app/api/jury/applications/[id]/audio/stream`, алиасы `/api/admin/results/calculate` и `/api/admin/payouts`, 16 новых тестов | Нет | Завершено |
+| **Payment Security Specialist** | Сквозная связка визарда с `/checkout/mock`, генерация сессий | `SUCCESS` | Редирект из визарда в `/checkout/mock?tx=...`, подтверждение в один клик с обновлением статуса на PAID | Нет | Договор с банком |
+| **Russian Data Protection Specialist** | Устранение утечки PII в кабинете жюри, публичные правовые страницы | `SUCCESS` | Удален переключатель `blindMode`, зафиксирован статус «СТРОГО АКТИВЕН», созданы публичные экраны `/terms`, `/privacy`, `/legal/consent` | Нет | Внешний юрист |
+| **QA Automation Engineer** (`qa-engineer`) | Расширение автоматизированных тестов Vitest, сквозная валидация | `SUCCESS` | 145/145 тестов passed в 12 сьютах, успешная компиляция 55/55 страниц Next.js | Нет | Готово |
+
+---
+
 ## Sprint 3: Final Security & Production Hardening (Current)
 **Ветка:** `fix/security-checkout-i18n-jury-privacy`  
 **Резервная ветка:** `backup/pre-final-security-remediation`  
