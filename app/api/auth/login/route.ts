@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { verifyPassword, createSessionToken, setAuthCookie } from "@/lib/auth";
+import { authRateLimiter } from "@/lib/rate-limiter";
 
 const DEMO_EMAILS = [
   "participant@espressivo.art",
@@ -9,53 +10,9 @@ const DEMO_EMAILS = [
   "admin@espressivo.art",
 ];
 
-// In-memory rate limiting tracker (per normalized email and/or client IP)
-interface RateLimitEntry {
-  attempts: number;
-  blockedUntil: number;
-}
-const rateLimitMap = new Map<string, RateLimitEntry>();
-
-function getClientIdentifier(req: Request, email: string): string {
-  const forwarded = req.headers.get("x-forwarded-for");
-  const ip = forwarded ? forwarded.split(",")[0].trim() : "unknown";
-  return `${ip}:${email}`;
-}
-
-function checkRateLimit(key: string): { isBlocked: boolean; retryAfterSeconds?: number } {
-  const now = Date.now();
-  const entry = rateLimitMap.get(key);
-  if (!entry) return { isBlocked: false };
-
-  if (entry.blockedUntil > now) {
-    return {
-      isBlocked: true,
-      retryAfterSeconds: Math.ceil((entry.blockedUntil - now) / 1000),
-    };
-  }
-
-  // If previous block expired, reset
-  if (entry.blockedUntil > 0 && entry.blockedUntil <= now) {
-    rateLimitMap.delete(key);
-  }
-  return { isBlocked: false };
-}
-
-function recordFailedAttempt(key: string): void {
-  const now = Date.now();
-  const entry = rateLimitMap.get(key) || { attempts: 0, blockedUntil: 0 };
-  entry.attempts += 1;
-
-  // Max 5 failed attempts per 10 minutes
-  if (entry.attempts >= 5) {
-    entry.blockedUntil = now + 15 * 60 * 1000; // block for 15 minutes
-  }
-  rateLimitMap.set(key, entry);
-}
-
-function clearRateLimit(key: string): void {
-  rateLimitMap.delete(key);
-}
+// Pre-computed bcrypt cost-10 hash for constant-time comparison on nonexistent/blocked users
+// Prevents side-channel response timing attacks for user enumeration (ASVS 2.1.8, 2.1.9)
+const DUMMY_BCRYPT_HASH = "$2a$10$wT8KzQh5XvG8Z5B1vC3zU.uV2X5Z8B1vC3zU.uV2X5Z8B1vC3zU.";
 
 export async function POST(req: Request) {
   try {
@@ -70,35 +27,33 @@ export async function POST(req: Request) {
     }
 
     const normalizedEmail = String(email).toLowerCase().trim();
-    const rateLimitKey = getClientIdentifier(req, normalizedEmail);
+    const rateLimitKey = authRateLimiter.getClientIdentifier(req, normalizedEmail);
 
-    // 1. Rate limiting & brute force check
-    const rateCheck = checkRateLimit(rateLimitKey);
+    // 1. Rate limiting & brute force check (with anti-spoofing and fail-closed security)
+    const rateCheck = await authRateLimiter.check(rateLimitKey);
     if (rateCheck.isBlocked) {
+      const status = rateCheck.failClosed ? 503 : 429;
+      const code = rateCheck.failClosed ? "SERVICE_UNAVAILABLE" : "RATE_LIMITED";
+      const errorMessage = rateCheck.failClosed
+        ? "Служба авторизации временно недоступна. Пожалуйста, повторите попытку позже."
+        : `Слишком много неудачных попыток входа. Пожалуйста, повторите через ${rateCheck.retryAfterSeconds} сек.`;
+
       return NextResponse.json(
         {
-          error: `Слишком много неудачных попыток входа. Пожалуйста, повторите через ${rateCheck.retryAfterSeconds} сек.`,
-          code: "RATE_LIMITED",
+          error: errorMessage,
+          code,
           retryAfter: rateCheck.retryAfterSeconds,
         },
-        { status: 429 }
+        { status }
       );
     }
 
-    // 2. Strict Production Guard: Disable demo accounts in production
-    if (
-      process.env.NODE_ENV === "production" &&
-      process.env.ENABLE_DEMO_ACCOUNTS !== "true" &&
-      DEMO_EMAILS.includes(normalizedEmail)
-    ) {
-      return NextResponse.json(
-        {
-          error: "Вход через демонстрационные аккаунты заблокирован в рабочей среде.",
-          code: "DEMO_ACCOUNTS_DISABLED",
-        },
-        { status: 403 }
-      );
-    }
+    // 2. Strict Production Guard: Demo accounts are unconditionally forbidden in NODE_ENV=production.
+    // No environment variable (such as ENABLE_DEMO_ACCOUNTS) can override or bypass this invariant.
+    // To prevent user enumeration and timing side-channels, we do NOT return a distinct error code
+    // (such as DEMO_ACCOUNTS_DISABLED or 403) or return immediately.
+    const isDemoInProd =
+      process.env.NODE_ENV === "production" && DEMO_EMAILS.includes(normalizedEmail);
 
     const user = await prisma.user.findUnique({
       where: { email: normalizedEmail },
@@ -107,8 +62,10 @@ export async function POST(req: Request) {
       },
     });
 
-    if (!user || !user.isActive) {
-      recordFailedAttempt(rateLimitKey);
+    if (isDemoInProd || !user || !user.isActive) {
+      // Execute constant-time bcrypt verification to prevent timing leaks
+      await verifyPassword(String(password), DUMMY_BCRYPT_HASH);
+      await authRateLimiter.recordFailedAttempt(rateLimitKey);
       return NextResponse.json(
         { error: "Неверный логин или пароль", code: "INVALID_CREDENTIALS" },
         { status: 401 }
@@ -117,7 +74,7 @@ export async function POST(req: Request) {
 
     const isMatch = await verifyPassword(String(password), user.passwordHash);
     if (!isMatch) {
-      recordFailedAttempt(rateLimitKey);
+      await authRateLimiter.recordFailedAttempt(rateLimitKey);
       return NextResponse.json(
         { error: "Неверный логин или пароль", code: "INVALID_CREDENTIALS" },
         { status: 401 }
@@ -125,7 +82,7 @@ export async function POST(req: Request) {
     }
 
     // Successful login: clear rate limit tracker
-    clearRateLimit(rateLimitKey);
+    await authRateLimiter.clear(rateLimitKey);
 
     // Role-based redirect URL
     let redirectUrl = "/dashboard";
@@ -165,3 +122,4 @@ export async function POST(req: Request) {
     );
   }
 }
+

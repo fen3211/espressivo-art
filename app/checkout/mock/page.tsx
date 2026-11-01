@@ -91,6 +91,7 @@ export default async function MockCheckoutPage(props: PageProps) {
             transactionId: txRecord.transactionId,
             applicationId: txRecord.applicationId,
             amount: txRecord.amount,
+            currency: txRecord.currency,
             status: 'CONFIRMED',
           });
 

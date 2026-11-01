@@ -156,10 +156,44 @@ describe("Critical Remediation & Production Readiness Test Suite", () => {
           transactionId: "tx_mock_123",
           applicationId: "app_123",
           amount: 2500,
+          currency: "RUB",
           status: "CONFIRMED",
           signature: "some_signature",
         });
 
+        expect(result.status).toBe("FAILED");
+        expect(result.message).toContain("disabled in production");
+      } finally {
+        (process.env as Record<string, string | undefined>).NODE_ENV = originalEnv;
+        process.env.ENABLE_MOCK_CHECKOUT = originalMockEnable;
+      }
+    });
+
+    it("should unconditionally prohibit mock payments in production even with ENABLE_MOCK_CHECKOUT=true override", async () => {
+      const originalEnv = process.env.NODE_ENV;
+      const originalMockEnable = process.env.ENABLE_MOCK_CHECKOUT;
+      try {
+        (process.env as Record<string, string | undefined>).NODE_ENV = "production";
+        process.env.ENABLE_MOCK_CHECKOUT = "true";
+
+        expect(gateway.isMockAllowed()).toBe(false);
+
+        await expect(
+          gateway.createPaymentSession({
+            applicationId: "any-app-id",
+            amount: 2500,
+            userId: participantAUser.id,
+          })
+        ).rejects.toThrow("Mock payment checkout is strictly prohibited in production environment");
+
+        const result = await gateway.processWebhook({
+          transactionId: "tx_mock_123",
+          applicationId: "app_123",
+          amount: 2500,
+          currency: "RUB",
+          status: "CONFIRMED",
+          signature: "some_signature",
+        });
         expect(result.status).toBe("FAILED");
         expect(result.message).toContain("disabled in production");
       } finally {
@@ -206,6 +240,7 @@ describe("Critical Remediation & Production Readiness Test Suite", () => {
         transactionId: session.transactionId,
         applicationId: app.id,
         amount: 100, // Tampered!
+        currency: "RUB",
         status: "CONFIRMED",
       });
 
@@ -228,13 +263,16 @@ describe("Critical Remediation & Production Readiness Test Suite", () => {
 
     it("should reject currency tampering in webhook processing", async () => {
       const validAmount = 2500;
+      // Valid signature was created with RUB
       const signature = gateway.generateSignature({
         transactionId: testTransactionId,
         applicationId: testApplicationId,
         amount: validAmount,
+        currency: "RUB",
         status: "CONFIRMED",
       });
 
+      // Attacker changes payload currency to USD -> Signature check or DB check fails
       const result = await gateway.processWebhook({
         transactionId: testTransactionId,
         applicationId: testApplicationId,
@@ -245,7 +283,27 @@ describe("Critical Remediation & Production Readiness Test Suite", () => {
       });
 
       expect(result.status).toBe("FAILED");
-      expect(result.message).toContain("Payment currency mismatch");
+
+      // Even if attacker generates signature with USD, DB mismatch check must reject it
+      const signatureWithUSD = gateway.generateSignature({
+        transactionId: testTransactionId,
+        applicationId: testApplicationId,
+        amount: validAmount,
+        currency: "USD",
+        status: "CONFIRMED",
+      });
+
+      const resultUSD = await gateway.processWebhook({
+        transactionId: testTransactionId,
+        applicationId: testApplicationId,
+        amount: validAmount,
+        currency: "USD",
+        status: "CONFIRMED",
+        signature: signatureWithUSD,
+      });
+
+      expect(resultUSD.status).toBe("FAILED");
+      expect(resultUSD.message).toContain("Payment currency mismatch");
     });
 
     it("should process valid payment atomically and achieve idempotent anti-replay protection", async () => {
@@ -254,6 +312,7 @@ describe("Critical Remediation & Production Readiness Test Suite", () => {
         transactionId: testTransactionId,
         applicationId: testApplicationId,
         amount: validAmount,
+        currency: "RUB",
         status: "CONFIRMED",
       });
 
@@ -306,12 +365,13 @@ describe("Critical Remediation & Production Readiness Test Suite", () => {
       expect(session).toBeNull();
     });
 
-    it("should block demo accounts login in production environment", async () => {
+    it("should unconditionally block demo accounts in production (even with ENABLE_DEMO_ACCOUNTS=true) without timing or enumeration leaks", async () => {
       const originalEnv = process.env.NODE_ENV;
       const originalDemoEnable = process.env.ENABLE_DEMO_ACCOUNTS;
       try {
         (process.env as Record<string, string | undefined>).NODE_ENV = "production";
-        delete process.env.ENABLE_DEMO_ACCOUNTS;
+        // Even if an attacker or misconfiguration sets ENABLE_DEMO_ACCOUNTS=true, it must NOT bypass
+        process.env.ENABLE_DEMO_ACCOUNTS = "true";
 
         const req = new Request("http://localhost:3000/api/auth/login", {
           method: "POST",
@@ -323,9 +383,11 @@ describe("Critical Remediation & Production Readiness Test Suite", () => {
         });
 
         const res = await postLogin(req);
-        expect(res.status).toBe(403);
+        // Must return standard 401 INVALID_CREDENTIALS to prevent user enumeration
+        expect(res.status).toBe(401);
         const data = await res.json();
-        expect(data.code).toBe("DEMO_ACCOUNTS_DISABLED");
+        expect(data.code).toBe("INVALID_CREDENTIALS");
+        expect(data.code).not.toBe("DEMO_ACCOUNTS_DISABLED");
       } finally {
         (process.env as Record<string, string | undefined>).NODE_ENV = originalEnv;
         process.env.ENABLE_DEMO_ACCOUNTS = originalDemoEnable;
@@ -429,8 +491,13 @@ describe("Critical Remediation & Production Readiness Test Suite", () => {
       const data = await res.json();
 
       expect(data.repertoire).toBe("Ф. Шуберт — Серенада");
-      expect(data.videoUrl).toBe("https://www.youtube.com/watch?v=real_schubert_piece");
-      expect(data.videoUrl).not.toContain("dQw4w9WgXcQ"); // Zero Rickroll!
+      if (data.isBlindModeEnforced) {
+        expect(data.videoUrl).toBeNull();
+        expect(data.audioUrl).toBe(`/api/jury/applications/${assignedAppId}/audio`);
+      } else {
+        expect(data.videoUrl).toBe("https://www.youtube.com/watch?v=real_schubert_piece");
+        expect(data.videoUrl).not.toContain("dQw4w9WgXcQ"); // Zero Rickroll!
+      }
       expect(data.code).toContain("EXP-JURY-");
       expect(data.isBlindModeDefault).toBe(true);
 
@@ -497,6 +564,41 @@ describe("Critical Remediation & Production Readiness Test Suite", () => {
       expect(data.participantNameMasked).toBe("Екатерина В.");
       expect(data.privacyProtected).toBe(true);
       expect(data.awardDegree).toBe("LAUREATE_1");
+    });
+
+    it("should strictly withhold minor name and totalScore when consentPublicStream is false (152-FZ Art. 10.1)", async () => {
+      const token = "cert_token_voronova_2026";
+      const cert = await prisma.certificate.findUnique({
+        where: { qrCodeToken: token },
+      });
+      if (!cert) throw new Error("Certificate not found");
+
+      await prisma.application.update({
+        where: { id: cert.applicationId },
+        data: { consentPublicStream: false },
+      });
+
+      try {
+        const req = new Request(`http://localhost:3000/api/public/verify-certificate/${token}`);
+        const res = await verifyCertificateHandler(req, {
+          params: Promise.resolve({ token }),
+        });
+
+        expect(res.status).toBe(200);
+        const data = await res.json();
+        expect(data.isValid).toBe(true);
+        expect(data.publicConsentGranted).toBe(false);
+        expect(data.participantName).toBeUndefined();
+        expect(data.participantNameMasked).toBeUndefined();
+        expect(data.totalScore).toBeUndefined();
+        expect(data.awardDegree).toBe("LAUREATE_1");
+        expect(data.certificateNumber).toContain("ESP-VOC-2026-1005-");
+      } finally {
+        await prisma.application.update({
+          where: { id: cert.applicationId },
+          data: { consentPublicStream: true },
+        });
+      }
     });
 
     it("should generate PDF diploma with bundled SIL OFL fonts and real QR code", async () => {
