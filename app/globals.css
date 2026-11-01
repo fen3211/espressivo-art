@@ -5,6 +5,10 @@
     --font-serif: 'Cormorant Garamond', 'Adobe Garamond Pro', 'EB Garamond', Garamond, Georgia, serif;
     --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --font-mono: 'Space Mono', 'JetBrains Mono', monospace;
+    
+    /* Kinematics */
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 
@@ -67,6 +71,44 @@
   font-weight: 500;
 }
 
+/* Editorial link hover line */
+.editorial-link {
+  position: relative;
+  display: inline-block;
+  text-decoration: none;
+}
+
+.editorial-link::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  transform: scaleX(0);
+  height: 1px;
+  bottom: -2px;
+  left: 0;
+  background-color: currentColor;
+  transform-origin: bottom right;
+  transition: transform 300ms var(--ease-out-expo);
+}
+
+.editorial-link:hover::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
+}
+
+/* Editorial image zoom */
+.editorial-img-container {
+  overflow: hidden;
+}
+
+.editorial-img-container img {
+  transition: transform 800ms var(--ease-out-expo);
+}
+
+.editorial-img-container:hover img {
+  transform: scale(1.03);
+}
+
 /* ==========================================================================
    THEME 2: WORKSPACE REALM — FRAME.IO MIDNIGHT CINEMA
    Obsidian #0a0a13, Void #040407, Graphite #08080c, Carbon Vellum #fcfcfc,
@@ -126,6 +168,17 @@
   font-family: var(--font-mono);
 }
 
+/* Smooth Interactive Cinema Card Hover */
+.cinema-card-interactive {
+  transition: transform 250ms var(--ease-out-expo), border-color 250ms var(--ease-out-expo), box-shadow 250ms var(--ease-out-expo);
+}
+
+.cinema-card-interactive:hover {
+  transform: translateY(-2px);
+  border-color: rgba(97, 153, 246, 0.6) !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.6), 0 0 20px rgba(97, 153, 246, 0.2) !important;
+}
+
 /* Focus indicators */
 .theme-art :focus-visible {
   outline: 2px solid #000000;
@@ -157,4 +210,111 @@
 .theme-cinema ::-webkit-scrollbar-thumb {
   background: #4f4f80;
   border-radius: 100px;
+}
+
+/* ==========================================================================
+   SMOOTH KINEMATICS & KEYFRAME ANIMATIONS
+   ========================================================================== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes irisGlowPulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(97, 153, 246, 0.25);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(97, 153, 246, 0.55);
+  }
+}
+
+@keyframes shimmerWave {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Animation Utilities */
+.animate-fade-in {
+  animation: fadeIn 350ms var(--ease-out-expo) forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 450ms var(--ease-out-expo) forwards;
+}
+
+.animate-slide-down {
+  animation: slideDown 350ms var(--ease-out-expo) forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 300ms var(--ease-out-expo) forwards;
+}
+
+.animate-pulse-glow {
+  animation: irisGlowPulse 2.4s infinite ease-in-out;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+  background-size: 200% 100%;
+  animation: shimmerWave 2s infinite;
+}
+
+/* Animation Stagger Delays */
+.delay-75 { animation-delay: 75ms; }
+.delay-150 { animation-delay: 150ms; }
+.delay-225 { animation-delay: 225ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-450 { animation-delay: 450ms; }
+
+/* Micro-transitions */
+.transition-smooth {
+  transition: all 220ms var(--ease-out-expo);
+}
+
+.transition-slow {
+  transition: all 400ms var(--ease-out-expo);
 }

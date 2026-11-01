@@ -125,8 +125,8 @@ export default function HomePage() {
   return (
     <div className="w-full">
       {/* 1. Full-Bleed Hero Spread */}
-      <section className="w-full">
-        <div className="relative w-full aspect-[21/9] min-h-[380px] sm:min-h-[520px] bg-[#000000] overflow-hidden">
+      <section className="w-full animate-fade-in">
+        <div className="relative w-full aspect-[21/9] min-h-[380px] sm:min-h-[520px] bg-[#000000] overflow-hidden editorial-img-container">
           <img
             src="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=2000&auto=format&fit=crop"
             alt="Young Soprano Soloist"
@@ -174,7 +174,7 @@ export default function HomePage() {
       {/* 3. Active Contest Feature Spread */}
       <section className="max-w-[1440px] mx-auto px-6 sm:px-10 py-20 border-b border-[#000000]">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          <div className="lg:col-span-5 aspect-[3/4] bg-[#dedede] border border-[#000000] relative overflow-hidden">
+          <div className="lg:col-span-5 aspect-[3/4] bg-[#dedede] border border-[#000000] relative overflow-hidden editorial-img-container">
             <img
               src="https://images.unsplash.com/photo-1465847899084-d164df4dedc6?q=80&w=1200&auto=format&fit=crop"
               alt="espressivo VOCAL Monograph"
@@ -259,7 +259,7 @@ export default function HomePage() {
           {nominations.map((nom) => (
             <div
               key={nom.code}
-              className="border border-[#000000] p-6 flex flex-col justify-between hover:bg-[#dedede] transition-colors"
+              className="border border-[#000000] p-6 flex flex-col justify-between hover:bg-[#dedede] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-1 hover:shadow-md cursor-pointer"
             >
               <div>
                 <span className="text-[9px] uppercase font-mono font-bold tracking-widest text-[#757580] mb-2 block">
@@ -380,7 +380,7 @@ export default function HomePage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {juryBoard.map((member, i) => (
             <div key={i} className="flex flex-col">
-              <div className="aspect-square bg-[#dedede] border border-[#000000] overflow-hidden mb-4">
+              <div className="aspect-square bg-[#dedede] border border-[#000000] overflow-hidden mb-4 editorial-img-container">
                 <img
                   src={member.image}
                   alt={member.nameRu}
@@ -428,7 +428,7 @@ export default function HomePage() {
                     </span>
                   </button>
                   {isOpen && (
-                    <div className="pb-6 text-sm font-serif text-[#121212] leading-relaxed">
+                    <div className="pb-6 text-sm font-serif text-[#121212] leading-relaxed animate-slide-down">
                       {locale === 'ru' ? faq.aRu : faq.aEn}
                     </div>
                   )}

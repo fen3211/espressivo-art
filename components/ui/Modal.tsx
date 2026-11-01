@@ -46,9 +46,9 @@ export function Modal({
 
   if (theme === 'art') {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#000000]/60 backdrop-blur-none font-serif">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#000000]/60 backdrop-blur-none font-serif animate-fade-in">
         <div
-          className={`w-full ${maxWidthStyles} bg-[#e7e7e7] text-[#000000] border-2 border-[#000000] rounded-none p-6 shadow-none animate-in fade-in duration-150`}
+          className={`w-full ${maxWidthStyles} bg-[#e7e7e7] text-[#000000] border-2 border-[#000000] rounded-none p-6 shadow-none animate-slide-up`}
         >
           <div className="flex items-center justify-between pb-4 border-b border-[#000000]">
             <h3 className="text-xl font-normal font-serif tracking-tight">{title}</h3>
@@ -71,9 +71,9 @@ export function Modal({
 
   // Cinema Mode
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#000000]/80 backdrop-blur-sm font-sans">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#000000]/80 backdrop-blur-md font-sans animate-fade-in">
       <div
-        className={`w-full ${maxWidthStyles} rounded-[10px] bg-gradient-to-b from-[#181826] to-[#08080c] border border-[#4f4f80] p-6 shadow-[0_32px_80px_rgba(0,0,0,0.85),0_0_0_1px_#4f4f80] text-[#fcfcfc] animate-in fade-in zoom-in-95 duration-200`}
+        className={`w-full ${maxWidthStyles} rounded-[10px] bg-gradient-to-b from-[#181826] to-[#08080c] border border-[#4f4f80] p-6 shadow-[0_32px_80px_rgba(0,0,0,0.85),0_0_0_1px_#4f4f80] text-[#fcfcfc] animate-scale-in`}
       >
         <div className="flex items-center justify-between pb-4 border-b border-[#2a2a32]">
           <h3 className="text-lg font-medium text-[#fcfcfc]">{title}</h3>

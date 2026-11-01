@@ -22,7 +22,7 @@ export function WorkspaceLayout({ role, children, pageTitle }: WorkspaceLayoutPr
       {/* Main Content Column */}
       <div className="flex-1 flex flex-col min-w-0">
         <TopNav role={role} pageTitle={pageTitle} />
-        <main className="flex-1 p-6 lg:p-8 max-w-[1440px] w-full mx-auto overflow-y-auto">
+        <main className="flex-1 p-6 lg:p-8 max-w-[1440px] w-full mx-auto overflow-y-auto animate-fade-in">
           {children}
         </main>
       </div>

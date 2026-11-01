@@ -49,8 +49,8 @@ export function Card({
 
   // Cinema Mode
   const interactiveStyles = interactive
-    ? 'hover:border-[#6199f6] hover:shadow-[0_12px_32px_rgba(97,153,246,0.15),inset_0_0_0_1px_#6199f6] hover:-translate-y-0.5 cursor-pointer transition-all duration-200'
-    : '';
+    ? 'hover:border-[#6199f6] hover:shadow-[0_16px_36px_rgba(97,153,246,0.2),inset_0_0_0_1px_#6199f6] hover:-translate-y-1 cursor-pointer transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]'
+    : 'transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]';
 
   const glowStyles = hasGlow
     ? 'shadow-[inset_0_0_0_1px_#4f4f80,0_12px_32px_rgba(79,79,128,0.25)] border-[#4f4f80]'

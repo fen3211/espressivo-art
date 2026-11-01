@@ -93,7 +93,7 @@ export function Button({
   return (
     <button
       disabled={disabled || loading}
-      className={`inline-flex items-center justify-center font-sans transition-all duration-150 cursor-pointer select-none disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none ${radiusStyles} ${variantStyles} ${sizeStyles} ${fullWidth ? 'w-full' : ''} ${className}`}
+      className={`inline-flex items-center justify-center font-sans transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] cursor-pointer select-none disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none hover:-translate-y-[1px] active:translate-y-0 ${radiusStyles} ${variantStyles} ${sizeStyles} ${fullWidth ? 'w-full' : ''} ${className}`}
       {...props}
     >
       {loading ? (
