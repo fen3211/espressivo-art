@@ -2,23 +2,35 @@ name: CI
 
 on:
   push:
-    branches: [master]
+    branches:
+      - master
+      - 'fix/**'
+      - 'feat/**'
+      - 'security/**'
   pull_request:
-    branches: [master]
+    branches:
+      - master
+
+# Principle of least privilege: token has read-only access to repository contents
+permissions:
+  contents: read
+
+# Cancel in-progress runs for the same workflow/branch to conserve resources and avoid race conditions
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test-and-build:
-    name: Lint, Test, Typecheck & Build
+    name: Lint, Test, Typecheck & Production Build
     runs-on: ubuntu-latest
 
+    # Baseline environment: strictly sanitized secrets and database config
     env:
       NODE_ENV: test
       DATABASE_URL: "file:./prisma/ci.db"
       JWT_SECRET: "ci-test-jwt-secret-minimum-32-characters-espressivo-art"
       MOCK_PAYMENT_SECRET: "ci-test-mock-payment-secret-minimum-32-characters"
-      ENABLE_MOCK_CHECKOUT: "true"
-      ENABLE_DEMO_ACCOUNTS: "true"
-      ALLOW_PROD_SEED: "true"
       NEXT_PUBLIC_APP_URL: "http://localhost:3000"
 
     steps:
@@ -54,6 +66,14 @@ jobs:
 
       - name: Run Vitest Test Suite
         run: npm test
+        env:
+          NODE_ENV: test
+          ENABLE_MOCK_CHECKOUT: "true"
 
       - name: Next.js Production Build
         run: npm run build
+        env:
+          NODE_ENV: production
+          ENABLE_DEMO_ACCOUNTS: "false"
+          ENABLE_MOCK_CHECKOUT: "false"
+          ALLOW_PROD_SEED: "false"
