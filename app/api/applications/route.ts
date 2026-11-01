@@ -238,12 +238,13 @@ export async function POST(req: Request) {
       }
     }
 
-    // Generate unique application code
+    // Generate unique application code dynamically from competition year
+    const compYear = (competition.startDate ? new Date(competition.startDate) : new Date()).getFullYear();
     let code = "";
     let isUnique = false;
     while (!isUnique) {
       const randomNum = Math.floor(1000 + Math.random() * 9000);
-      code = `EXP-2026-${randomNum}`;
+      code = `EXP-${compYear}-${randomNum}`;
       const existing = await prisma.application.findUnique({ where: { code } });
       if (!existing) isUnique = true;
     }
