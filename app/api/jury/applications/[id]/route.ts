@@ -47,8 +47,14 @@ export async function GET(
       );
     }
 
-    // BLIND AUDITION: Strict minimization of minor and guardian PII.
-    // Names, birth dates, schools, teacher names, and parent contacts are strictly excluded.
+    const isJury = session.role === "JURY";
+    const audioUrl = `/api/jury/applications/${application.id}/audio`;
+
+    // BLIND AUDITION SERVER-SIDE ENFORCEMENT:
+    // 1. Strict minimization of minor and guardian PII (names, birth dates, contacts excluded).
+    // 2. Server MUST NOT return raw video URL to Jury when blind mode is active.
+    // 3. Jury cannot bypass blind audition mode under any circumstances.
+    // 4. Admin retains authorized full video view capability.
     return NextResponse.json({
       id: application.id,
       applicationId: application.id,
@@ -61,10 +67,20 @@ export async function GET(
       ageCategoryTitleEn: application.ageCategory.titleEn,
       repertoire: application.repertoire,
       performanceDuration: application.performanceDuration,
-      videoUrl: application.videoUrl,
+      videoUrl: isJury ? null : application.videoUrl,
+      audioUrl: isJury ? audioUrl : null,
+      audioRepresentation: isJury
+        ? {
+            type: "AUDIO_ONLY",
+            streamUrl: audioUrl,
+            provider: application.videoProvider,
+            isBlindMode: true,
+          }
+        : null,
       videoProvider: application.videoProvider,
       status: application.status,
       isBlindModeDefault: true,
+      isBlindModeEnforced: isJury,
       hasEvaluation: Boolean(evalRecord && !evalRecord.isDraft),
       evaluationDraft: evalRecord
         ? {

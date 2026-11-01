@@ -31,7 +31,9 @@ interface JuryApplicationData {
   ageCategoryTitleEn: string;
   repertoire: string;
   performanceDuration?: number | null;
-  videoUrl: string;
+  videoUrl?: string | null;
+  audioUrl?: string | null;
+  isBlindModeEnforced?: boolean;
   videoProvider: string;
   status: string;
   isBlindModeDefault: boolean;
@@ -319,9 +321,11 @@ export default function JuryAdjudicationTerminalPage() {
         <div className="lg:col-span-7 space-y-4">
           <ProtectedVideoPlayer
             videoUrl={appData.videoUrl}
+            audioUrl={appData.audioUrl}
             title={appData.repertoire}
             participantCode={appData.code}
             isBlindMode={true}
+            allowToggleBlindMode={false}
           />
 
           <div className="p-3 rounded-[8px] bg-[#08080c] border border-[#2a2a32] text-xs text-[#757580] flex items-center justify-between">

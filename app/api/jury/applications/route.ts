@@ -25,16 +25,21 @@ export async function GET(req: Request) {
       orderBy: { createdAt: "desc" },
     });
 
-    // BLIND AUDITION: Strip all minor and teacher PII
+    const isJury = session.role === "JURY";
+
+    // BLIND AUDITION: Strip all minor and teacher PII and enforce raw video stripping for Jury
     const results = evaluations.map((ev) => {
       const app = ev.application;
+      const audioUrl = `/api/jury/applications/${app.id}/audio`;
       return {
         applicationId: app.id,
         code: app.code,
         nominationTitle: app.nomination.titleRu,
         ageCategoryTitle: app.ageCategory.titleRu,
         repertoire: app.repertoire,
-        videoUrl: app.videoUrl,
+        videoUrl: isJury ? null : app.videoUrl,
+        audioUrl: isJury ? audioUrl : null,
+        isBlindModeEnforced: isJury,
         hasEvaluation: !ev.isDraft,
         evaluationDraft: {
           scoreTechnique: ev.scoreTechnique,

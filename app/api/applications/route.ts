@@ -52,7 +52,9 @@ export async function GET(req: Request) {
           ageCategoryTitle: app.ageCategory.titleRu,
           repertoire: app.repertoire,
           performanceDuration: app.performanceDuration,
-          videoUrl: app.videoUrl,
+          videoUrl: null, // Raw video URL stripped for Jury
+          audioUrl: `/api/jury/applications/${app.id}/audio`,
+          isBlindModeEnforced: true,
           videoProvider: app.videoProvider,
           status: app.status,
           hasEvaluation: Boolean(evalRecord && !evalRecord.isDraft),

@@ -68,7 +68,10 @@ export async function GET(
         ageCategoryTitle: application.ageCategory.titleRu,
         repertoire: application.repertoire,
         performanceDuration: application.performanceDuration,
-        videoUrl: application.videoUrl,
+        videoUrl: null, // Raw video URL stripped for Jury
+        audioUrl: `/api/jury/applications/${application.id}/audio`,
+        isBlindModeDefault: true,
+        isBlindModeEnforced: true,
         videoProvider: application.videoProvider,
         status: application.status,
         hasEvaluation: Boolean(juryEval && !juryEval.isDraft),
