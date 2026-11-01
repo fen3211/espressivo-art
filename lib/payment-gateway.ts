@@ -37,10 +37,34 @@ export interface PaymentGatewayInterface {
 }
 
 export class MockPaymentGateway implements PaymentGatewayInterface {
-  private secret: string;
+  /**
+   * Securely retrieves and validates the mock payment gateway secret.
+   * Eliminates insecure fallback defaults. Fails closed if missing or weak (<32 chars).
+   */
+  public getSecret(): string {
+    const secret = process.env.MOCK_PAYMENT_SECRET;
+    if (!secret) {
+      throw new Error(
+        "MOCK_PAYMENT_SECRET configuration is missing. Mock payment operations are blocked."
+      );
+    }
+    if (secret.length < 32) {
+      throw new Error(
+        `MOCK_PAYMENT_SECRET is insecure: minimum length is 32 characters, got ${secret.length}.`
+      );
+    }
+    return secret;
+  }
 
-  constructor() {
-    this.secret = process.env.MOCK_PAYMENT_SECRET || "mock-payment-secret-espressivo-art-2026";
+  /**
+   * Checks whether mock payment flows are permitted in the current runtime environment.
+   * Mock checkout is strictly disabled in production unless explicit non-production flag is set.
+   */
+  public isMockAllowed(): boolean {
+    if (process.env.NODE_ENV === "production") {
+      return process.env.ENABLE_MOCK_CHECKOUT === "true";
+    }
+    return true;
   }
 
   /**
@@ -52,21 +76,27 @@ export class MockPaymentGateway implements PaymentGatewayInterface {
     amount: number;
     status: string;
   }): string {
+    const secret = this.getSecret();
     const raw = `${data.transactionId}:${data.applicationId}:${data.amount}:${data.status}`;
-    return crypto.createHmac("sha256", this.secret).update(raw).digest("hex");
+    return crypto.createHmac("sha256", secret).update(raw).digest("hex");
   }
 
   /**
-   * Verifies an incoming HMAC-SHA256 signature.
+   * Verifies an incoming HMAC-SHA256 signature with constant-time equality.
    */
   public verifySignature(
     data: { transactionId: string; applicationId: string; amount: number; status: string },
     signature: string
   ): boolean {
     if (!signature) return false;
-    const expected = this.generateSignature(data);
     try {
-      return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signature));
+      const expected = this.generateSignature(data);
+      const expectedBuffer = Buffer.from(expected, "utf8");
+      const signatureBuffer = Buffer.from(signature, "utf8");
+      if (expectedBuffer.length !== signatureBuffer.length) {
+        return false;
+      }
+      return crypto.timingSafeEqual(expectedBuffer, signatureBuffer);
     } catch {
       return false;
     }
@@ -74,10 +104,20 @@ export class MockPaymentGateway implements PaymentGatewayInterface {
 
   /**
    * Creates a mock payment session and initial PENDING transaction record.
+   * Prohibited in production unless explicitly authorized.
    */
   public async createPaymentSession(params: PaymentSessionParams): Promise<PaymentSessionResult> {
-    const transactionId = `mock_tx_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-    const currency = params.currency || "RUB";
+    if (!this.isMockAllowed()) {
+      throw new Error(
+        "Mock payment checkout is strictly prohibited in production environment. Real acquiring provider must be configured."
+      );
+    }
+
+    // Require valid secret even to initialize session
+    this.getSecret();
+
+    const transactionId = `mock_tx_${Date.now()}_${crypto.randomBytes(6).toString("hex")}`;
+    const currency = (params.currency || "RUB").toUpperCase();
 
     // Verify application exists
     const application = await prisma.application.findUnique({
@@ -86,6 +126,11 @@ export class MockPaymentGateway implements PaymentGatewayInterface {
 
     if (!application) {
       throw new Error(`Application ${params.applicationId} not found`);
+    }
+
+    // Verify application ownership
+    if (application.userId !== params.userId) {
+      throw new Error("Cannot create payment session for an application belonging to another user");
     }
 
     // Create payment transaction record in DB
@@ -121,12 +166,20 @@ export class MockPaymentGateway implements PaymentGatewayInterface {
 
   /**
    * Idempotent webhook processing with anti-replay protection, strict amount/currency verification,
-   * and 20% teacher commission accrual.
+   * production guards, and atomic 20% teacher commission accrual.
    */
   public async processWebhook(
     payload: WebhookPayload,
     signatureHeader?: string
   ): Promise<WebhookResult> {
+    if (!this.isMockAllowed()) {
+      return {
+        received: false,
+        status: "FAILED",
+        message: "Mock payment webhook processing is disabled in production environment",
+      };
+    }
+
     const signature = signatureHeader || payload.signature;
 
     // 1. Verify signature
@@ -207,9 +260,18 @@ export class MockPaymentGateway implements PaymentGatewayInterface {
       };
     }
 
-    // 4. Atomic transaction processing
+    // 4. Atomic transaction processing with inside-transaction double-check
     if (payload.status === "CONFIRMED") {
       await prisma.$transaction(async (tx) => {
+        // Re-read inside transaction to prevent race conditions
+        const freshTx = await tx.paymentTransaction.findUnique({
+          where: { id: existingTx.id },
+        });
+
+        if (!freshTx || freshTx.status === "CONFIRMED") {
+          return;
+        }
+
         // Mark payment transaction as confirmed
         await tx.paymentTransaction.update({
           where: { id: existingTx.id },
@@ -224,7 +286,7 @@ export class MockPaymentGateway implements PaymentGatewayInterface {
           where: { id: existingTx.applicationId },
           data: {
             paymentStatus: "PAID",
-            status: "PAID", // moves from DRAFT/SUBMITTED/PAYMENT_PENDING to PAID
+            status: "PAID",
             updatedAt: new Date(),
           },
         });

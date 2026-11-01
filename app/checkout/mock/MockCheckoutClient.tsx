@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useLanguage } from '@/components/LanguageContext';
 import { Badge } from '@/components/ui/Badge';
 import {
   CreditCard,
@@ -12,6 +13,7 @@ import {
   Lock,
   Receipt,
   Sparkles,
+  ShieldAlert,
 } from 'lucide-react';
 
 export interface MockCheckoutData {
@@ -27,7 +29,8 @@ export interface MockCheckoutData {
     id: string;
     code: string;
     participantName: string;
-    competitionTitle: string;
+    competitionTitleRu: string;
+    competitionTitleEn: string;
     status: string;
     paymentStatus: string;
   };
@@ -36,27 +39,57 @@ export interface MockCheckoutData {
 
 export interface MockCheckoutClientProps {
   data: MockCheckoutData | null;
-  errorMessage?: string;
+  errorCode?: string;
+  isProductionBlocked?: boolean;
+  isAlreadyPaid?: boolean;
   txParam?: string;
   appIdParam?: string;
 }
 
 export function MockCheckoutClient({
   data,
-  errorMessage,
+  errorCode,
+  isProductionBlocked,
+  isAlreadyPaid,
   txParam,
   appIdParam,
 }: MockCheckoutClientProps) {
   const router = useRouter();
+  const { locale, dict } = useLanguage();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [error, setError] = useState<string | null>(errorMessage || null);
+  const [customError, setCustomError] = useState<string | null>(null);
+
+  // Handle error resolution from dictionary
+  const resolveErrorMessage = (code?: string): string => {
+    if (!code) return dict.checkout.sessionNotFoundDesc;
+    switch (code) {
+      case 'MOCK_CHECKOUT_DISABLED_IN_PRODUCTION':
+        return dict.checkout.mockDisabledInProd;
+      case 'UNAUTHORIZED':
+        return dict.checkout.unauthorizedCheckout;
+      case 'ACCESS_FORBIDDEN':
+        return dict.checkout.accessForbiddenCheckout;
+      case 'TRANSACTION_ID_REQUIRED':
+        return locale === 'ru'
+          ? 'Требуется идентификатор транзакции. Прямой доступ по коду заявки запрещен.'
+          : 'Transaction identifier required. Direct access via application ID is forbidden.';
+      case 'TRANSACTION_NOT_FOUND':
+        return dict.checkout.sessionNotFoundDesc;
+      case 'APPLICATION_MISMATCH':
+        return locale === 'ru'
+          ? 'Идентификатор транзакции не соответствует переданной заявке.'
+          : 'Transaction identifier does not match the provided application.';
+      default:
+        return dict.checkout.sessionNotFoundDesc;
+    }
+  };
 
   const handlePayTest = async () => {
-    if (!data) return;
+    if (!data || isAlreadyPaid || isProductionBlocked) return;
 
     setIsProcessing(true);
-    setError(null);
+    setCustomError(null);
 
     try {
       const res = await fetch('/api/payments/webhook', {
@@ -69,6 +102,7 @@ export function MockCheckoutClient({
           transactionId: data.transaction.transactionId,
           applicationId: data.transaction.applicationId,
           amount: data.transaction.amount,
+          currency: data.transaction.currency,
           status: 'CONFIRMED',
           signature: data.signature,
         }),
@@ -77,18 +111,18 @@ export function MockCheckoutClient({
       const result = await res.json().catch(() => ({}));
 
       if (!res.ok || (result.status !== 'PROCESSED' && result.status !== 'ALREADY_PROCESSED' && !result.received)) {
-        throw new Error(result.error || result.message || 'Ошибка обработки тестового платежа');
+        throw new Error(result.error || result.message || dict.errors.paymentFailed);
       }
 
       setIsSuccess(true);
 
-      // Smooth redirect to the application cabinet with payment=success query flag
+      // Smooth redirect to the application workspace
       setTimeout(() => {
         router.push(`/dashboard/applications/${data.application.id}?payment=success`);
       }, 700);
     } catch (err: unknown) {
       const e = err as Error;
-      setError(e.message || 'Не удалось подтвердить платеж');
+      setCustomError(e.message || dict.errors.paymentFailed);
       setIsProcessing(false);
     }
   };
@@ -102,7 +136,38 @@ export function MockCheckoutClient({
     }
   };
 
-  if (!data) {
+  // 1. Production Blocked UI
+  if (isProductionBlocked) {
+    return (
+      <div className="min-h-screen bg-[#07070b] text-[#fcfcfc] flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-[#11111a] border border-red-500/30 rounded-2xl p-8 text-center space-y-6 shadow-2xl">
+          <div className="w-14 h-14 mx-auto rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400">
+            <ShieldAlert className="w-7 h-7" />
+          </div>
+
+          <div className="space-y-2">
+            <h1 className="text-xl font-serif tracking-tight text-[#fcfcfc]">
+              {locale === 'ru' ? 'Тестовый эквайринг недоступен' : 'Mock Acquiring Disabled'}
+            </h1>
+            <p className="text-sm text-[#a3a3b3] leading-relaxed">
+              {dict.checkout.mockDisabledInProd}
+            </p>
+          </div>
+
+          <button
+            onClick={handleCancel}
+            className="w-full inline-flex items-center justify-center gap-2 h-11 px-6 rounded-xl bg-[rgba(252,252,252,0.08)] hover:bg-[rgba(252,252,252,0.15)] text-[#fcfcfc] text-sm font-medium transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>{dict.checkout.returnToApplications}</span>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. Error or Missing Data UI
+  if (!data || errorCode) {
     return (
       <div className="min-h-screen bg-[#07070b] text-[#fcfcfc] flex items-center justify-center p-4">
         <div className="max-w-md w-full bg-[#11111a] border border-[#33334d] rounded-2xl p-8 text-center space-y-6 shadow-2xl">
@@ -112,14 +177,14 @@ export function MockCheckoutClient({
 
           <div className="space-y-2">
             <h1 className="text-xl font-serif tracking-tight text-[#fcfcfc]">
-              Платежная сессия не найдена
+              {dict.checkout.sessionNotFound}
             </h1>
             <p className="text-sm text-[#8f8fa3]">
-              {error || 'Указанная транзакция не существует, уже оплачена или переданы неверные параметры.'}
+              {resolveErrorMessage(errorCode)}
             </p>
             {txParam && (
               <p className="text-xs font-mono text-[#63637a] truncate mt-1">
-                ID транзакции: {txParam}
+                {dict.checkout.transactionId}: {txParam}
               </p>
             )}
           </div>
@@ -129,18 +194,21 @@ export function MockCheckoutClient({
             className="w-full inline-flex items-center justify-center gap-2 h-11 px-6 rounded-xl bg-[rgba(252,252,252,0.08)] hover:bg-[rgba(252,252,252,0.15)] text-[#fcfcfc] text-sm font-medium transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Вернуться к заявкам</span>
+            <span>{dict.checkout.returnToApplications}</span>
           </button>
         </div>
       </div>
     );
   }
 
-  const formattedAmount = new Intl.NumberFormat('ru-RU', {
+  const formattedAmount = new Intl.NumberFormat(locale === 'ru' ? 'ru-RU' : 'en-US', {
     style: 'currency',
     currency: data.transaction.currency || 'RUB',
     maximumFractionDigits: 0,
   }).format(data.transaction.amount);
+
+  const competitionTitle =
+    locale === 'ru' ? data.application.competitionTitleRu : data.application.competitionTitleEn;
 
   return (
     <div className="min-h-screen bg-[#07070b] text-[#fcfcfc] flex flex-col justify-between py-12 px-4 sm:px-6 lg:px-8 selection:bg-[#6199f6]/30">
@@ -161,7 +229,7 @@ export function MockCheckoutClient({
 
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-medium">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Тестовый эквайринг (MOCK)</span>
+            <span>{dict.checkout.mockAcquiringBadge}</span>
           </div>
         </div>
 
@@ -171,10 +239,10 @@ export function MockCheckoutClient({
             <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
             <div className="text-xs space-y-1">
               <p className="font-semibold text-amber-200 uppercase tracking-wider">
-                Внимание: демонстрационный режим оплаты
+                {dict.checkout.mockNoticeTitle}
               </p>
               <p className="text-amber-200/80 leading-relaxed">
-                Списание реальных денежных средств <strong>не производится</strong>. Это тестовый шлюз для безопасной валидации бизнес-логики конкурса, комиссионного начисления и автоматического перевода статуса заявки.
+                {dict.checkout.mockNoticeDesc}
               </p>
             </div>
           </div>
@@ -186,7 +254,7 @@ export function MockCheckoutClient({
           <div className="flex items-center justify-between pb-6 border-b border-[#292942]">
             <div>
               <span className="text-xs uppercase tracking-wider text-[#8f8fa3] block">
-                Сумма к оплате
+                {dict.checkout.amountDue}
               </span>
               <span className="text-3xl sm:text-4xl font-semibold tracking-tight text-[#fcfcfc] mt-1 block">
                 {formattedAmount}
@@ -194,43 +262,56 @@ export function MockCheckoutClient({
             </div>
 
             <div className="text-right">
-              <span className="text-xs text-[#8f8fa3] block mb-1">Статус платежа</span>
-              <Badge status={data.transaction.status} label={data.transaction.status === 'PENDING' ? 'Ожидает оплаты' : data.transaction.status} />
+              <span className="text-xs text-[#8f8fa3] block mb-1">
+                {dict.checkout.paymentStatus}
+              </span>
+              <Badge
+                status={data.transaction.status}
+                label={
+                  isAlreadyPaid
+                    ? dict.statuses.PAID
+                    : data.transaction.status === 'PENDING'
+                    ? locale === 'ru'
+                      ? 'Ожидает оплаты'
+                      : 'Pending Payment'
+                    : data.transaction.status
+                }
+              />
             </div>
           </div>
 
           {/* Details Grid */}
           <div className="space-y-3.5 text-sm">
             <div className="flex items-center justify-between py-1">
-              <span className="text-[#8f8fa3]">Код заявки</span>
+              <span className="text-[#8f8fa3]">{dict.checkout.applicationCode}</span>
               <span className="font-mono font-medium text-[#fcfcfc] px-2 py-0.5 rounded bg-[rgba(252,252,252,0.06)] border border-[rgba(252,252,252,0.1)]">
                 {data.application.code}
               </span>
             </div>
 
             <div className="flex items-center justify-between py-1">
-              <span className="text-[#8f8fa3]">Конкурс</span>
+              <span className="text-[#8f8fa3]">{dict.checkout.competition}</span>
               <span className="font-medium text-[#fcfcfc] text-right truncate max-w-[260px]">
-                {data.application.competitionTitle}
+                {competitionTitle}
               </span>
             </div>
 
             <div className="flex items-center justify-between py-1">
-              <span className="text-[#8f8fa3]">Участник</span>
+              <span className="text-[#8f8fa3]">{dict.checkout.participant}</span>
               <span className="font-medium text-[#dedfee]">
                 {data.application.participantName}
               </span>
             </div>
 
             <div className="flex items-center justify-between py-1">
-              <span className="text-[#8f8fa3]">ID транзакции</span>
+              <span className="text-[#8f8fa3]">{dict.checkout.transactionId}</span>
               <span className="font-mono text-xs text-[#a3a3b3] truncate max-w-[240px]">
                 {data.transaction.transactionId}
               </span>
             </div>
 
             <div className="flex items-center justify-between py-1">
-              <span className="text-[#8f8fa3]">Шлюз провайдера</span>
+              <span className="text-[#8f8fa3]">{dict.checkout.gatewayProvider}</span>
               <span className="inline-flex items-center gap-1.5 text-xs text-[#6199f6]">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 <span>MockGateway (HMAC-SHA256)</span>
@@ -241,24 +322,32 @@ export function MockCheckoutClient({
           {/* Realistic Mock Visual Card */}
           <div className="rounded-xl bg-gradient-to-tr from-[#1b1b2d] via-[#24243a] to-[#1a1a2b] border border-[#4f4f80]/60 p-4 space-y-3 text-xs shadow-inner">
             <div className="flex items-center justify-between text-[#8f8fa3]">
-              <span className="font-mono tracking-widest text-[#dedfee]">ESPRESSIVO TEST CARD</span>
+              <span className="font-mono tracking-widest text-[#dedfee]">{dict.checkout.testCardTitle}</span>
               <CreditCard className="w-5 h-5 text-[#c5a059]" />
             </div>
             <div className="font-mono text-base tracking-[0.25em] text-[#fcfcfc] py-1">
               •••• •••• •••• 4242
             </div>
             <div className="flex items-center justify-between text-[11px] text-[#8f8fa3] font-mono">
-              <span>TEST HOLDER</span>
+              <span>{dict.checkout.cardHolder}</span>
               <span>EXP: 12/28</span>
               <span>CVV: 999</span>
             </div>
           </div>
 
-          {/* Error Message */}
-          {error && (
+          {/* Already Paid Banner */}
+          {isAlreadyPaid && (
+            <div className="rounded-xl bg-blue-950/40 border border-blue-500/40 p-4 text-xs text-blue-200 flex items-center gap-2.5">
+              <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0" />
+              <span>{dict.checkout.alreadyPaidDesc}</span>
+            </div>
+          )}
+
+          {/* Custom Error Message */}
+          {customError && (
             <div className="rounded-xl bg-red-950/40 border border-red-500/40 p-4 text-xs text-red-200 flex items-center gap-2.5">
               <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
-              <span>{error}</span>
+              <span>{customError}</span>
             </div>
           )}
 
@@ -266,46 +355,58 @@ export function MockCheckoutClient({
           {isSuccess && (
             <div className="rounded-xl bg-emerald-950/40 border border-emerald-500/40 p-4 text-xs text-emerald-200 flex items-center gap-2.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>Платеж успешно подтвержден! Перенаправление в кабинет заявки...</span>
+              <span>{dict.checkout.paymentSuccessBanner}</span>
             </div>
           )}
 
           {/* Action Buttons */}
           <div className="space-y-3 pt-2">
-            <button
-              onClick={handlePayTest}
-              disabled={isProcessing || isSuccess}
-              className="w-full h-12 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-[0.99] text-[#07070b] font-semibold text-sm tracking-wide shadow-[0_0_24px_rgba(16,185,129,0.3)] hover:shadow-[0_0_32px_rgba(16,185,129,0.45)] transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-            >
-              {isProcessing ? (
-                <>
-                  <svg className="animate-spin h-4 w-4 text-[#07070b]" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                  <span>Обработка вебхука...</span>
-                </>
-              ) : isSuccess ? (
-                <>
-                  <CheckCircle2 className="w-5 h-5 text-[#07070b]" />
-                  <span>Оплачено успешно</span>
-                </>
-              ) : (
-                <>
-                  <CheckCircle2 className="w-5 h-5 text-[#07070b]" />
-                  <span>Оплатить (Тест) / Pay (Test)</span>
-                </>
-              )}
-            </button>
+            {!isAlreadyPaid ? (
+              <button
+                onClick={handlePayTest}
+                disabled={isProcessing || isSuccess}
+                className="w-full h-12 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-[0.99] text-[#07070b] font-semibold text-sm tracking-wide shadow-[0_0_24px_rgba(16,185,129,0.3)] hover:shadow-[0_0_32px_rgba(16,185,129,0.45)] transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              >
+                {isProcessing ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4 text-[#07070b]" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    <span>{dict.checkout.processingWebhook}</span>
+                  </>
+                ) : isSuccess ? (
+                  <>
+                    <CheckCircle2 className="w-5 h-5 text-[#07070b]" />
+                    <span>{dict.common.success}</span>
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-5 h-5 text-[#07070b]" />
+                    <span>{dict.checkout.payTestBtn}</span>
+                  </>
+                )}
+              </button>
+            ) : (
+              <button
+                onClick={handleCancel}
+                className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-[0.99] text-white font-semibold text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>{dict.checkout.returnToApplications}</span>
+              </button>
+            )}
 
-            <button
-              onClick={handleCancel}
-              disabled={isProcessing}
-              className="w-full h-11 rounded-xl bg-transparent border border-[rgba(252,252,252,0.15)] hover:bg-[rgba(252,252,252,0.06)] hover:border-[rgba(252,252,252,0.3)] active:scale-[0.99] text-[#dedfee] text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-40 cursor-pointer"
-            >
-              <ArrowLeft className="w-4 h-4 text-[#8f8fa3]" />
-              <span>Отмена / Cancel</span>
-            </button>
+            {!isAlreadyPaid && (
+              <button
+                onClick={handleCancel}
+                disabled={isProcessing}
+                className="w-full h-11 rounded-xl bg-transparent border border-[rgba(252,252,252,0.15)] hover:bg-[rgba(252,252,252,0.06)] hover:border-[rgba(252,252,252,0.3)] active:scale-[0.99] text-[#dedfee] text-sm font-medium transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-40 cursor-pointer"
+              >
+                <ArrowLeft className="w-4 h-4 text-[#8f8fa3]" />
+                <span>{dict.checkout.cancelBtn}</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -313,12 +414,12 @@ export function MockCheckoutClient({
         <div className="flex items-center justify-center gap-6 text-[11px] text-[#63637a] pt-2">
           <div className="flex items-center gap-1.5">
             <Lock className="w-3.5 h-3.5 text-emerald-500/70" />
-            <span>256-Bit Test TLS</span>
+            <span>{dict.checkout.tlsNotice}</span>
           </div>
           <span>•</span>
           <div className="flex items-center gap-1.5">
             <Receipt className="w-3.5 h-3.5 text-[#8f8fa3]" />
-            <span>Автоматический чек</span>
+            <span>{dict.checkout.automatedReceipt}</span>
           </div>
           <span>•</span>
           <span>espressivo ART Mock Gateway</span>
