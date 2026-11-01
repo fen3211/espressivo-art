@@ -19,6 +19,7 @@ export interface WebhookPayload {
   transactionId: string;
   applicationId: string;
   amount: number;
+  currency?: string;
   status: "CONFIRMED" | "FAILED";
   signature: string;
 }
@@ -119,7 +120,8 @@ export class MockPaymentGateway implements PaymentGatewayInterface {
   }
 
   /**
-   * Idempotent webhook processing with anti-replay protection and 20% teacher commission accrual.
+   * Idempotent webhook processing with anti-replay protection, strict amount/currency verification,
+   * and 20% teacher commission accrual.
    */
   public async processWebhook(
     payload: WebhookPayload,
@@ -167,6 +169,35 @@ export class MockPaymentGateway implements PaymentGatewayInterface {
       };
     }
 
+    // 2.1 Verify application association
+    if (existingTx.applicationId !== payload.applicationId) {
+      return {
+        received: false,
+        status: "FAILED",
+        message: `Application ID mismatch: expected ${existingTx.applicationId}, received ${payload.applicationId}`,
+      };
+    }
+
+    // 2.2 Verify amount strictly matches original transaction
+    const expectedAmount = Number(existingTx.amount);
+    const receivedAmount = Number(payload.amount);
+    if (isNaN(receivedAmount) || Math.abs(expectedAmount - receivedAmount) > 0.001) {
+      return {
+        received: false,
+        status: "FAILED",
+        message: `Payment amount mismatch: expected ${expectedAmount}, received ${receivedAmount}`,
+      };
+    }
+
+    // 2.3 Verify currency if provided in webhook payload
+    if (payload.currency && existingTx.currency && payload.currency.toUpperCase() !== existingTx.currency.toUpperCase()) {
+      return {
+        received: false,
+        status: "FAILED",
+        message: `Payment currency mismatch: expected ${existingTx.currency}, received ${payload.currency}`,
+      };
+    }
+
     // 3. IDEMPOTENCY CHECK: If already confirmed, do NOT double-process
     if (existingTx.status === "CONFIRMED") {
       return {
@@ -211,7 +242,7 @@ export class MockPaymentGateway implements PaymentGatewayInterface {
         const teacherProfile = existingTx.application.referralTeacher;
         if (teacherProfile && !existingCommission) {
           const commissionRate = teacherProfile.commissionRate || 0.20;
-          const commissionAmount = Math.round(payload.amount * commissionRate * 100) / 100;
+          const commissionAmount = Math.round(existingTx.amount * commissionRate * 100) / 100;
 
           // Record ledger transaction entry
           await tx.ledgerTransaction.create({
@@ -246,7 +277,8 @@ export class MockPaymentGateway implements PaymentGatewayInterface {
             entityId: existingTx.applicationId,
             details: JSON.stringify({
               transactionId: payload.transactionId,
-              amount: payload.amount,
+              amount: existingTx.amount,
+              currency: existingTx.currency,
               teacherCommissionAccrued: Boolean(teacherProfile),
             }),
           },

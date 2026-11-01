@@ -5,7 +5,8 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Table, Column } from '@/components/ui/Table';
-import { DollarSign, Download, CreditCard, ShieldCheck } from 'lucide-react';
+import { Download } from 'lucide-react';
+import { useLanguage } from '@/components/LanguageContext';
 
 interface FinanceTxRow extends Record<string, unknown> {
   id: string;
@@ -20,6 +21,8 @@ interface FinanceTxRow extends Record<string, unknown> {
 }
 
 export default function AdminFinancePage() {
+  const { dict } = useLanguage();
+
   const transactions: FinanceTxRow[] = [
     {
       id: '1',
@@ -70,42 +73,42 @@ export default function AdminFinancePage() {
   const columns: Column<FinanceTxRow>[] = [
     {
       key: 'txId',
-      header: 'ID транзакции',
+      header: dict.admin.finance.tableHeaders.transactionId,
       render: (r) => <span className="font-mono text-xs text-[#6199f6]">{r.txId}</span>,
     },
     {
       key: 'appCode',
-      header: 'Заявка',
+      header: dict.admin.finance.tableHeaders.entryCode,
       render: (r) => <span className="font-mono text-xs text-[#dedfee]">{r.appCode}</span>,
     },
     {
       key: 'payerName',
-      header: 'Плательщик',
+      header: dict.admin.finance.tableHeaders.payer,
       render: (r) => <span className="text-xs font-medium text-[#fcfcfc]">{r.payerName}</span>,
     },
     {
       key: 'grossAmount',
-      header: 'Взнос (Gross)',
+      header: dict.admin.finance.tableHeaders.grossAmount,
       render: (r) => <span className="font-mono text-sm font-semibold text-[#fcfcfc]">{r.grossAmount}</span>,
     },
     {
       key: 'teacherRoyalty',
-      header: 'Комиссия учителя (20%)',
+      header: dict.admin.finance.tableHeaders.teacherCommission,
       render: (r) => <span className="font-mono text-xs text-[#eab308]">{r.teacherRoyalty}</span>,
     },
     {
       key: 'netRevenue',
-      header: 'Чистая выручка',
+      header: dict.admin.finance.tableHeaders.netAmount,
       render: (r) => <span className="font-mono text-sm font-bold text-[#22c55e]">{r.netRevenue}</span>,
     },
     {
       key: 'gatewayStatus',
-      header: 'Статус эквайринга',
-      render: () => <Badge status="PAID" label="Успешно" />,
+      header: dict.admin.finance.tableHeaders.gatewayStatus,
+      render: () => <Badge status="PAID" label={dict.common.success} />,
     },
     {
       key: 'date',
-      header: 'Дата',
+      header: dict.admin.finance.tableHeaders.date,
       render: (r) => <span className="text-xs text-[#757580]">{r.date}</span>,
     },
   ];
@@ -115,13 +118,13 @@ export default function AdminFinancePage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-[#2a2a32]">
         <div>
           <div className="text-[11px] font-mono uppercase tracking-wider text-[#6199f6] mb-1">
-            FINANCIAL AUDIT // GATEWAY REGISTRY
+            {dict.admin.finance.tag}
           </div>
           <h1 className="text-2xl sm:text-3xl font-medium text-[#fcfcfc]">
-            Бухгалтерский реестр оплат и комиссий
+            {dict.admin.finance.title}
           </h1>
           <p className="text-xs sm:text-sm text-[#a3a3b3] mt-1">
-            Аудит поступлений регистрационных взносов и обязательств перед преподавателями
+            {dict.admin.finance.subtitle}
           </p>
         </div>
 
@@ -129,9 +132,9 @@ export default function AdminFinancePage() {
           variant="ghost"
           size="md"
           iconLeft={<Download className="w-4 h-4" />}
-          onClick={() => alert('Экспорт финансового отчета в Excel/CSV')}
+          onClick={() => alert(dict.admin.finance.csvExportedAlert)}
         >
-          Выгрузка для бухгалтерии (CSV)
+          {dict.admin.finance.exportCsvBtn}
         </Button>
       </div>
 

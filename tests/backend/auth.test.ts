@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  validateJwtSecret,
   hashPassword,
   verifyPassword,
   createSessionToken,
@@ -122,5 +123,24 @@ describe("Backend Auth Module (lib/auth.ts)", () => {
     // Unauthenticated
     const emptyReq = new Request("http://localhost:3000/api/teacher/dashboard");
     await expect(requireRole(emptyReq, ["TEACHER"])).rejects.toThrow(AuthError);
+  });
+
+  it("should enforce strict JWT_SECRET presence and >= 32 characters length", () => {
+    const originalSecret = process.env.JWT_SECRET;
+    try {
+      // 1. Missing secret
+      delete process.env.JWT_SECRET;
+      expect(() => validateJwtSecret()).toThrow("JWT_SECRET environment variable is missing");
+
+      // 2. Short secret (< 32 chars)
+      process.env.JWT_SECRET = "too-short-secret";
+      expect(() => validateJwtSecret()).toThrow("minimum length is 32 characters");
+
+      // 3. Valid secret (>= 32 chars)
+      process.env.JWT_SECRET = "a".repeat(32);
+      expect(validateJwtSecret()).toBe("a".repeat(32));
+    } finally {
+      process.env.JWT_SECRET = originalSecret;
+    }
   });
 });

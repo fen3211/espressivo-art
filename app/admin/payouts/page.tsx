@@ -5,7 +5,8 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Table, Column } from '@/components/ui/Table';
-import { Check, X, Wallet, CheckCircle2 } from 'lucide-react';
+import { Check, X } from 'lucide-react';
+import { useLanguage } from '@/components/LanguageContext';
 
 interface AdminPayoutRow extends Record<string, unknown> {
   id: string;
@@ -19,6 +20,8 @@ interface AdminPayoutRow extends Record<string, unknown> {
 }
 
 export default function AdminPayoutApprovalsPage() {
+  const { dict } = useLanguage();
+
   const [payouts, setPayouts] = useState<AdminPayoutRow[]>([
     {
       id: '1',
@@ -56,25 +59,25 @@ export default function AdminPayoutApprovalsPage() {
     setPayouts((prev) =>
       prev.map((p) => (p.id === id ? { ...p, status: 'APPROVED' } : p))
     );
-    alert('Выплата одобрена и направлена в банковский реестр!');
+    alert(dict.admin.payouts.payoutApprovedAlert);
   };
 
   const handleReject = (id: string) => {
     setPayouts((prev) =>
       prev.map((p) => (p.id === id ? { ...p, status: 'REJECTED' } : p))
     );
-    alert('Запрос на выплату отклонен с уведомлением преподавателю');
+    alert(dict.admin.payouts.payoutRejectedAlert);
   };
 
   const columns: Column<AdminPayoutRow>[] = [
     {
       key: 'requestId',
-      header: 'Номер заявки',
+      header: dict.admin.finance.tableHeaders.entryCode,
       render: (r) => <span className="font-mono text-xs text-[#6199f6]">{r.requestId}</span>,
     },
     {
       key: 'teacherName',
-      header: 'Преподаватель',
+      header: dict.admin.payouts.tableHeaders.teacher,
       render: (r) => (
         <div>
           <div className="font-medium text-[#fcfcfc]">{r.teacherName}</div>
@@ -84,7 +87,7 @@ export default function AdminPayoutApprovalsPage() {
     },
     {
       key: 'amount',
-      header: 'Сумма выплаты',
+      header: dict.admin.payouts.tableHeaders.amount,
       render: (r) => (
         <span className="font-mono text-sm font-bold text-[#22c55e]">
           {r.amount}
@@ -93,27 +96,33 @@ export default function AdminPayoutApprovalsPage() {
     },
     {
       key: 'bankDetails',
-      header: 'Банковские реквизиты',
+      header: dict.admin.payouts.tableHeaders.bankDetails,
       render: (r) => <span className="text-xs font-mono text-[#dedfee]">{r.bankDetails}</span>,
     },
     {
       key: 'date',
-      header: 'Дата запроса',
+      header: dict.admin.payouts.tableHeaders.requestDate,
       render: (r) => <span className="text-xs text-[#757580]">{r.date}</span>,
     },
     {
       key: 'status',
-      header: 'Статус',
+      header: dict.admin.payouts.tableHeaders.status,
       render: (r) => (
         <Badge
           status={r.status === 'APPROVED' ? 'PAID' : r.status === 'REJECTED' ? 'REJECTED' : 'PAYMENT_PENDING'}
-          label={r.status === 'APPROVED' ? 'Одобрено' : r.status === 'REJECTED' ? 'Отклонено' : 'На проверке'}
+          label={
+            r.status === 'APPROVED'
+              ? dict.statuses.APPROVED
+              : r.status === 'REJECTED'
+              ? dict.statuses.REJECTED
+              : dict.admin.payouts.underReview
+          }
         />
       ),
     },
     {
       key: 'actions',
-      header: 'Решение',
+      header: dict.admin.payouts.tableHeaders.actions,
       align: 'right',
       render: (r) => (
         <div className="flex items-center justify-end gap-2">
@@ -125,7 +134,7 @@ export default function AdminPayoutApprovalsPage() {
                 iconLeft={<Check className="w-3.5 h-3.5" />}
                 onClick={() => handleApprove(r.id)}
               >
-                Одобрить
+                {dict.admin.payouts.approveBtn}
               </Button>
               <Button
                 variant="danger-outline"
@@ -133,11 +142,11 @@ export default function AdminPayoutApprovalsPage() {
                 iconLeft={<X className="w-3.5 h-3.5" />}
                 onClick={() => handleReject(r.id)}
               >
-                Отклонить
+                {dict.admin.payouts.rejectBtn}
               </Button>
             </>
           ) : (
-            <span className="text-xs text-[#757580] font-mono">Решение принято</span>
+            <span className="text-xs text-[#757580] font-mono">{dict.admin.payouts.decisionMade}</span>
           )}
         </div>
       ),
@@ -148,13 +157,13 @@ export default function AdminPayoutApprovalsPage() {
     <div className="space-y-6 font-sans">
       <div className="border-b border-[#2a2a32] pb-6">
         <div className="text-[11px] font-mono uppercase tracking-wider text-[#6199f6] mb-1">
-          PAYOUT APPROVALS
+          {dict.admin.payouts.tag}
         </div>
         <h1 className="text-2xl sm:text-3xl font-medium text-[#fcfcfc]">
-          Одобрение выплат партнерских комиссий
+          {dict.admin.payouts.title}
         </h1>
         <p className="text-xs sm:text-sm text-[#a3a3b3] mt-1">
-          Проверка реквизитов преподавателей и авторизация банковских переводов
+          {dict.admin.payouts.subtitle}
         </p>
       </div>
 

@@ -25,8 +25,8 @@ describe("Comprehensive Security & RBAC Audit (espressivo ART)", () => {
   let unassignedJuryToken: string;
   let adminToken: string;
 
-  let participantAUser: { id: string; email: string };
-  let participantBUser: { id: string; email: string };
+  let participantAUser: { id: string; email: string; fullName: string };
+  let participantBUser: { id: string; email: string; fullName: string };
   let teacherProfileId: string;
 
   let testCompetitionId: string;
@@ -270,7 +270,7 @@ describe("Comprehensive Security & RBAC Audit (espressivo ART)", () => {
       expect(body.error).toContain("согласие");
     });
 
-    it("should reject application creation when consentPublicStream is missing/false", async () => {
+    it("should accept application creation when consentPublicStream is false, marking it as restricted", async () => {
       const req = new Request("http://localhost:3000/api/applications", {
         method: "POST",
         headers: {
@@ -282,21 +282,22 @@ describe("Comprehensive Security & RBAC Audit (espressivo ART)", () => {
           nominationId: testNominationId,
           ageCategoryId: testAgeCategoryId,
           participantName: "Ребенок Без Согласия На Видео",
-          birthDate: "2015-05-01",
+          birthDate: "2018-05-01",
           repertoire: "Этюд",
           videoUrl: "https://youtube.com/watch?v=123",
           parentFullName: "Родитель",
           parentEmail: "rod@example.com",
           parentPhone: "+79991234567",
           consentDataProcess: true,
-          consentPublicStream: false, // VIOLATION
+          consentPublicStream: false,
         }),
       });
 
       const res = await postApplication(req);
-      expect(res.status).toBe(400);
+      expect(res.status).toBe(201);
       const body = await res.json();
-      expect(body.error).toContain("видеозаписи");
+      expect(body.application.consentPublicStream).toBe(false);
+      expect(body.application.status).toBe("DRAFT");
     });
 
     it("should not leak minor private contact data or videoUrl in public certificate verification", async () => {
@@ -337,6 +338,34 @@ describe("Comprehensive Security & RBAC Audit (espressivo ART)", () => {
       expect(res.status).toBe(403);
       const body = await res.json();
       expect(body.error).toContain("чужой заявке");
+    });
+
+    it("should strictly isolate teacher sensitive data (bankDetails, balance, userId) when participant fetches application", async () => {
+      const req = new Request(`http://localhost:3000/api/applications/${applicationAId}`, {
+        headers: { authorization: `Bearer ${participantAToken}` },
+      });
+
+      const res = await getApplicationById(req, {
+        params: Promise.resolve({ id: applicationAId }),
+      });
+      expect(res.status).toBe(200);
+      const data = await res.json();
+
+      // Referral teacher must be present with safe public attributes
+      expect(data.referralTeacher).toBeDefined();
+      expect(data.referralTeacher.id).toBe(teacherProfileId);
+      expect(data.referralTeacher.referralCode).toBe("TEACHER-MARIA");
+
+      // Critical sensitive teacher data must NEVER leak
+      expect(data.referralTeacher.bankDetails).toBeUndefined();
+      expect(data.referralTeacher.balance).toBeUndefined();
+      expect(data.referralTeacher.commissionRate).toBeUndefined();
+      expect(data.referralTeacher.userId).toBeUndefined();
+
+      // Ensure raw JSON string does not leak teacher's bank details or balance
+      const rawJson = JSON.stringify(data);
+      expect(rawJson).not.toContain("40802810900000001234");
+      expect(rawJson).not.toContain("bankDetails");
     });
 
     it("Participant B should be forbidden (403) from updating Participant A's application", async () => {
@@ -407,6 +436,74 @@ describe("Comprehensive Security & RBAC Audit (espressivo ART)", () => {
       expect(body.error).toContain("не назначена");
     });
 
+    it("refusal of consentPublicStream must NOT block closed jury evaluation", async () => {
+      // 1. Create application with consentPublicStream = false
+      const nonStreamApp = await prisma.application.create({
+        data: {
+          code: `EXP-NS-${Date.now().toString().slice(-4)}`,
+          userId: participantAUser.id,
+          competitionId: testCompetitionId,
+          nominationId: testNominationId,
+          ageCategoryId: testAgeCategoryId,
+          participantName: "Василий Васильев (Без видео)",
+          birthDate: new Date("2015-02-02"),
+          repertoire: "Академический вокализ",
+          videoUrl: "https://youtube.com/watch?v=private",
+          parentFullName: "Василий Васильев",
+          parentEmail: "private@test.com",
+          parentPhone: "+79997776655",
+          consentDataProcess: true,
+          consentPublicStream: false, // Refused public streaming
+          status: "UNDER_REVIEW",
+          paymentStatus: "PAID",
+        },
+      });
+
+      // 2. Assign jury
+      const juryUser = await prisma.user.findUnique({ where: { email: "jury@espressivo.art" } });
+      if (!juryUser) throw new Error("Jury not found");
+
+      await prisma.evaluation.create({
+        data: {
+          applicationId: nonStreamApp.id,
+          juryUserId: juryUser.id,
+          isDraft: true,
+        },
+      });
+
+      // 3. Jury member should successfully view application
+      const viewReq = new Request(`http://localhost:3000/api/applications/${nonStreamApp.id}`, {
+        headers: { authorization: `Bearer ${assignedJuryToken}` },
+      });
+      const viewRes = await getApplicationById(viewReq, {
+        params: Promise.resolve({ id: nonStreamApp.id }),
+      });
+      expect(viewRes.status).toBe(200);
+
+      // 4. Jury member evaluates application
+      const evalReq = new Request("http://localhost:3000/api/jury/evaluations", {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${assignedJuryToken}`,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          applicationId: nonStreamApp.id,
+          scoreTechnique: 24,
+          scoreMusicality: 23,
+          scoreArtistry: 25,
+          scoreRepertoire: 24,
+          comment: "Прекрасное исполнение и чистота интонации",
+          isDraft: false,
+        }),
+      });
+
+      const evalRes = await postJuryEvaluation(evalReq);
+      expect(evalRes.status).toBe(200);
+      const evalBody = await evalRes.json();
+      expect(evalBody.totalScore).toBe(96);
+    });
+
     it("Unassigned jury member should be forbidden (403) from submitting evaluation", async () => {
       const req = new Request("http://localhost:3000/api/jury/evaluations", {
         method: "POST",
@@ -463,6 +560,149 @@ describe("Comprehensive Security & RBAC Audit (espressivo ART)", () => {
       expect(res.status).toBe(400);
       const body = await res.json();
       expect(body.error).toContain("signature");
+    });
+
+    it("should reject payment webhook when amount does not match original transaction", async () => {
+      const payApp = await prisma.application.create({
+        data: {
+          code: `EXP-AMT-${Date.now().toString().slice(-4)}`,
+          userId: participantAUser.id,
+          competitionId: testCompetitionId,
+          nominationId: testNominationId,
+          ageCategoryId: testAgeCategoryId,
+          participantName: "Фальшивая Оплата Суммы",
+          birthDate: new Date("2015-01-01"),
+          repertoire: "Конкурсная песня",
+          videoUrl: "https://youtube.com/watch?v=amt",
+          parentFullName: "Родитель Тестовый",
+          parentEmail: "finance-amt@test.com",
+          parentPhone: "+79998889901",
+          consentDataProcess: true,
+          consentPublicStream: true,
+          referralTeacherId: teacherProfileId,
+          status: "SUBMITTED",
+          paymentStatus: "PENDING",
+        },
+      });
+
+      const paymentSession = await gateway.createPaymentSession({
+        applicationId: payApp.id,
+        amount: 3000,
+        currency: "RUB",
+        userId: participantAUser.id,
+      });
+
+      const teacherBefore = await prisma.teacherProfile.findUnique({
+        where: { id: teacherProfileId },
+      });
+      const balanceBefore = teacherBefore?.balance || 0;
+
+      // Tampered amount: 100 instead of 3000 (even with valid signature for 100)
+      const tamperedAmount = 100;
+      const tamperedSignature = gateway.generateSignature({
+        transactionId: paymentSession.transactionId,
+        applicationId: payApp.id,
+        amount: tamperedAmount,
+        status: "CONFIRMED",
+      });
+
+      const req = new Request("http://localhost:3000/api/payments/webhook", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          transactionId: paymentSession.transactionId,
+          applicationId: payApp.id,
+          amount: tamperedAmount,
+          currency: "RUB",
+          status: "CONFIRMED",
+          signature: tamperedSignature,
+        }),
+      });
+
+      const res = await postPaymentWebhook(req);
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toContain("Payment amount mismatch");
+
+      // Transaction must remain PENDING
+      const tx = await prisma.paymentTransaction.findUnique({
+        where: { transactionId: paymentSession.transactionId },
+      });
+      expect(tx?.status).toBe("PENDING");
+
+      // Application must remain UNPAID
+      const app = await prisma.application.findUnique({
+        where: { id: payApp.id },
+      });
+      expect(app?.paymentStatus).toBe("PENDING");
+
+      // Teacher balance must NOT be altered
+      const teacherAfter = await prisma.teacherProfile.findUnique({
+        where: { id: teacherProfileId },
+      });
+      expect(teacherAfter?.balance).toBe(balanceBefore);
+    });
+
+    it("should reject payment webhook when currency does not match original transaction", async () => {
+      const payApp = await prisma.application.create({
+        data: {
+          code: `EXP-CUR-${Date.now().toString().slice(-4)}`,
+          userId: participantAUser.id,
+          competitionId: testCompetitionId,
+          nominationId: testNominationId,
+          ageCategoryId: testAgeCategoryId,
+          participantName: "Фальшивая Оплата Валюты",
+          birthDate: new Date("2015-01-01"),
+          repertoire: "Конкурсная песня",
+          videoUrl: "https://youtube.com/watch?v=cur",
+          parentFullName: "Родитель Тестовый",
+          parentEmail: "finance-cur@test.com",
+          parentPhone: "+79998889902",
+          consentDataProcess: true,
+          consentPublicStream: true,
+          referralTeacherId: teacherProfileId,
+          status: "SUBMITTED",
+          paymentStatus: "PENDING",
+        },
+      });
+
+      const paymentSession = await gateway.createPaymentSession({
+        applicationId: payApp.id,
+        amount: 2500,
+        currency: "RUB",
+        userId: participantAUser.id,
+      });
+
+      const signature = gateway.generateSignature({
+        transactionId: paymentSession.transactionId,
+        applicationId: payApp.id,
+        amount: 2500,
+        status: "CONFIRMED",
+      });
+
+      // Mismatched currency: USD instead of RUB
+      const req = new Request("http://localhost:3000/api/payments/webhook", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          transactionId: paymentSession.transactionId,
+          applicationId: payApp.id,
+          amount: 2500,
+          currency: "USD",
+          status: "CONFIRMED",
+          signature,
+        }),
+      });
+
+      const res = await postPaymentWebhook(req);
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toContain("Payment currency mismatch");
+
+      const tx = await prisma.paymentTransaction.findUnique({
+        where: { transactionId: paymentSession.transactionId },
+      });
+      expect(tx?.status).toBe("PENDING");
     });
 
     it("should enforce exact 20% teacher commission and anti-replay idempotency", async () => {

@@ -12,13 +12,13 @@ export interface TopNavProps {
 }
 
 export function TopNav({ role, pageTitle }: TopNavProps) {
-  const { locale, setLocale } = useLanguage();
+  const { locale, setLocale, dict } = useLanguage();
 
   const roleName: Record<UserRole, string> = {
-    PARTICIPANT: 'Участник',
-    TEACHER: 'Преподаватель (20%)',
-    JURY: 'Судья / Эксперт',
-    ADMIN: 'Супер-администратор',
+    PARTICIPANT: dict.common.participant,
+    TEACHER: `${dict.common.teacher} (20%)`,
+    JURY: dict.common.jury,
+    ADMIN: dict.common.admin,
   };
 
   return (
@@ -30,7 +30,7 @@ export function TopNav({ role, pageTitle }: TopNavProps) {
         </span>
         <span className="text-[#2a2a32]">/</span>
         <h1 className="text-sm font-medium text-[#fcfcfc] truncate">
-          {pageTitle || 'Рабочая панель'}
+          {pageTitle || dict.common.dashboard}
         </h1>
       </div>
 
@@ -38,14 +38,14 @@ export function TopNav({ role, pageTitle }: TopNavProps) {
       <div className="flex items-center gap-4">
         {/* Workspace Quick Switcher Demo Pill (Helpful for reviewer) */}
         <div className="hidden xl:flex items-center gap-1 bg-[#08080c] px-2 py-1 rounded-full border border-[#2a2a32] text-[11px] font-mono">
-          <span className="text-[#757580] px-1">Кабинеты:</span>
+          <span className="text-[#757580] px-1">{locale === 'ru' ? 'Кабинеты:' : 'Suites:'}</span>
           <Link
             href="/dashboard"
             className={`px-2 py-0.5 rounded-full transition-colors ${
               role === 'PARTICIPANT' ? 'bg-[#6199f6] text-[#0a0a13] font-bold' : 'text-[#a3a3b3] hover:text-white'
             }`}
           >
-            Участник
+            {dict.common.participant}
           </Link>
           <Link
             href="/teacher"
@@ -53,7 +53,7 @@ export function TopNav({ role, pageTitle }: TopNavProps) {
               role === 'TEACHER' ? 'bg-[#6199f6] text-[#0a0a13] font-bold' : 'text-[#a3a3b3] hover:text-white'
             }`}
           >
-            Педагог
+            {dict.common.teacher}
           </Link>
           <Link
             href="/jury/dashboard"
@@ -61,7 +61,7 @@ export function TopNav({ role, pageTitle }: TopNavProps) {
               role === 'JURY' ? 'bg-[#6199f6] text-[#0a0a13] font-bold' : 'text-[#a3a3b3] hover:text-white'
             }`}
           >
-            Жюри
+            {dict.common.jury}
           </Link>
           <Link
             href="/admin"
@@ -69,7 +69,7 @@ export function TopNav({ role, pageTitle }: TopNavProps) {
               role === 'ADMIN' ? 'bg-[#6199f6] text-[#0a0a13] font-bold' : 'text-[#a3a3b3] hover:text-white'
             }`}
           >
-            Админ
+            {dict.common.admin}
           </Link>
         </div>
 
@@ -100,7 +100,7 @@ export function TopNav({ role, pageTitle }: TopNavProps) {
           </div>
           <div className="hidden sm:flex flex-col text-left">
             <span className="text-xs font-medium text-[#fcfcfc] leading-tight">
-              Елена Алексеева
+              {locale === 'ru' ? 'Елена Алексеева' : 'Elena Alekseeva'}
             </span>
             <span className="text-[10px] text-[#6199f6] leading-tight font-mono">
               {roleName[role]}

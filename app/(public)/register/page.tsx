@@ -11,7 +11,7 @@ import { Check, ShieldCheck, Sparkles } from 'lucide-react';
 function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { locale } = useLanguage();
+  const { locale, dict } = useLanguage();
 
   const [role, setRole] = useState<'PARTICIPANT' | 'TEACHER'>('PARTICIPANT');
   const [fullName, setFullName] = useState('');
@@ -34,7 +34,11 @@ function RegisterForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fullName || !email || !password) {
-      setError('Пожалуйста, заполните обязательные поля');
+      setError(
+        locale === 'ru'
+          ? 'Пожалуйста, заполните обязательные поля'
+          : 'Please complete all required fields'
+      );
       return;
     }
 
@@ -87,12 +91,10 @@ function RegisterForm() {
             REGISTRATION MONOGRAPH
           </span>
           <h1 className="text-3xl sm:text-4xl font-serif text-[#000000]">
-            {locale === 'ru' ? 'Регистрация в системе' : 'Create an Account'}
+            {dict.auth.titleRegister}
           </h1>
           <p className="text-xs sm:text-sm font-serif text-[#757580] mt-2">
-            {locale === 'ru'
-              ? 'Выберите статус учетной записи для перехода в соответствующий кабинет'
-              : 'Select your account role to configure your dedicated workspace'}
+            {dict.auth.subtitleRegister}
           </p>
         </div>
 
@@ -108,11 +110,15 @@ function RegisterForm() {
             }`}
           >
             <div className="text-[9px] uppercase font-mono font-bold tracking-widest opacity-70 mb-1">
-              РОЛЬ 01
+              {locale === 'ru' ? 'РОЛЬ 01' : 'ROLE 01'}
             </div>
-            <div className="text-lg font-serif font-bold">Участник / Родитель</div>
+            <div className="text-lg font-serif font-bold">
+              {locale === 'ru' ? 'Участник / Родитель' : 'Participant / Parent'}
+            </div>
             <p className="text-xs font-serif mt-1 opacity-80">
-              Подача заявки, загрузка видеозаписи, получение оценок жюри и дипломов.
+              {locale === 'ru'
+                ? 'Подача заявки, загрузка видеозаписи, получение оценок жюри и дипломов.'
+                : 'Submit entries, upload performance videos, track adjudications, and access verified diplomas.'}
             </p>
           </button>
 
@@ -126,11 +132,15 @@ function RegisterForm() {
             }`}
           >
             <div className="text-[9px] uppercase font-mono font-bold tracking-widest opacity-70 mb-1">
-              РОЛЬ 02 • 20% БОНУС
+              {locale === 'ru' ? 'РОЛЬ 02 • 20% БОНУС' : 'ROLE 02 • 20% ROYALTY'}
             </div>
-            <div className="text-lg font-serif font-bold">Преподаватель</div>
+            <div className="text-lg font-serif font-bold">
+              {locale === 'ru' ? 'Преподаватель' : 'Teacher / Mentor'}
+            </div>
             <p className="text-xs font-serif mt-1 opacity-80">
-              Личная реферальная ссылка, реестр учеников, начисление комиссии 20%.
+              {locale === 'ru'
+                ? 'Личная реферальная ссылка, реестр учеников, начисление комиссии 20%.'
+                : 'Dedicated referral promo link, student roster, and official 20% royalty disbursements.'}
             </p>
           </button>
         </div>
@@ -140,7 +150,10 @@ function RegisterForm() {
           <div className="p-4 border border-[#000000] bg-[#dedede] mb-6 flex items-start gap-3 text-xs font-serif">
             <Sparkles className="w-5 h-5 text-[#000000] shrink-0 mt-0.5" />
             <div>
-              <strong>Партнёрская программа для наставников:</strong> После регистрации вам будет автоматически сгенерирован уникальный реферальный код. За каждого ученика начисляется 20% от оргвзноса (от 500 ₽) с прямым выводом на карту.
+              <strong>{locale === 'ru' ? 'Партнёрская программа для наставников:' : 'Teacher Partner Program:'}</strong>{' '}
+              {locale === 'ru'
+                ? 'После регистрации вам будет автоматически сгенерирован уникальный реферальный код. За каждого ученика начисляется 20% от оргвзноса (от 500 ₽) с прямым выводом на карту.'
+                : 'Upon registration, your personal referral code is generated automatically. Earn 20% from every submitted student entry fee with official bank payouts.'}
             </div>
           </div>
         )}
@@ -150,7 +163,11 @@ function RegisterForm() {
           <div className="p-3 border border-[#000000] bg-[#dedede] mb-6 flex items-center justify-between text-xs font-sans">
             <div className="flex items-center gap-2">
               <Check className="w-4 h-4 text-[#000000]" />
-              <span>Реферальный код преподавателя применен:</span>
+              <span>
+                {locale === 'ru'
+                  ? 'Реферальный код преподавателя применен:'
+                  : 'Teacher referral promo code applied:'}
+              </span>
             </div>
             <span className="font-mono font-bold text-sm bg-black text-white px-2 py-0.5">
               {referralCode}
@@ -168,16 +185,20 @@ function RegisterForm() {
 
           <Input
             theme="art"
-            label={role === 'TEACHER' ? 'ФИО Преподавателя' : 'ФИО Представителя или Участника'}
+            label={
+              role === 'TEACHER'
+                ? (locale === 'ru' ? 'ФИО Преподавателя' : 'Teacher Full Name')
+                : (locale === 'ru' ? 'ФИО Представителя или Участника' : 'Parent or Participant Full Name')
+            }
             required
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            placeholder="Иванова Анна Сергеевна"
+            placeholder={locale === 'ru' ? 'Иванова Анна Сергеевна' : 'Anna Ivanova'}
           />
 
           <Input
             theme="art"
-            label="Email адрес для связи"
+            label={dict.auth.emailLabel}
             type="email"
             required
             value={email}
@@ -187,7 +208,11 @@ function RegisterForm() {
 
           <Input
             theme="art"
-            label="Номер телефона (для SMS-уведомлений о дипломах)"
+            label={
+              locale === 'ru'
+                ? 'Номер телефона (для уведомлений о дипломах)'
+                : 'Phone Number (for SMS & diploma notices)'
+            }
             type="tel"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
@@ -197,17 +222,25 @@ function RegisterForm() {
           {role === 'TEACHER' && (
             <Input
               theme="art"
-              label="Учебное заведение / ДМШ / Студия"
+              label={
+                locale === 'ru'
+                  ? 'Учебное заведение / ДМШ / Студия'
+                  : 'Educational Institution / Conservatory'
+              }
               value={organization}
               onChange={(e) => setOrganization(e.target.value)}
-              placeholder="ДШИ им. П.И. Чайковского"
+              placeholder={locale === 'ru' ? 'ДШИ им. П.И. Чайковского' : 'Tchaikovsky School of Arts'}
             />
           )}
 
           {role === 'PARTICIPANT' && (
             <Input
               theme="art"
-              label="Реферальный промокод преподавателя (если есть)"
+              label={
+                locale === 'ru'
+                  ? 'Реферальный промокод преподавателя (если есть)'
+                  : 'Teacher Referral Promo Code (optional)'
+              }
               value={referralCode}
               onChange={(e) => setReferralCode(e.target.value)}
               placeholder="EXP-TEACHER-2026"
@@ -216,29 +249,33 @@ function RegisterForm() {
 
           <Input
             theme="art"
-            label="Придумайте пароль"
+            label={dict.auth.passwordLabel}
             type="password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Минимум 8 символов"
+            placeholder={locale === 'ru' ? 'Минимум 8 символов' : 'Minimum 8 characters'}
           />
 
           <div className="text-[11px] font-serif text-[#757580] pt-2">
-            Регистрируясь, вы принимаете регламент конкурса и даете согласие на обработку персональных данных в соответствии с 152-ФЗ.
+            {locale === 'ru'
+              ? 'Регистрируясь, вы принимаете регламент конкурса и даете согласие на обработку персональных данных в соответствии с 152-ФЗ и GDPR.'
+              : 'By registering, you accept the competition regulations and give consent to personal data processing under 152-FZ and GDPR.'}
           </div>
 
           <div className="pt-2">
             <Button variant="solid-ink" fullWidth size="lg" loading={loading} type="submit">
-              {role === 'TEACHER' ? 'Зарегистрироваться как педагог' : 'Создать кабинет и подать заявку'}
+              {role === 'TEACHER'
+                ? (locale === 'ru' ? 'Зарегистрироваться как педагог' : 'Sign Up as Teacher')
+                : (locale === 'ru' ? 'Создать кабинет и подать заявку' : 'Create Account & Apply')}
             </Button>
           </div>
         </form>
 
         <div className="mt-8 text-center text-xs font-serif text-[#121212]">
-          Уже есть учетная запись?{' '}
+          {dict.auth.haveAccountPrompt}{' '}
           <Link href="/login" className="font-sans font-bold uppercase underline text-[#000000]">
-            Войти в кабинет
+            {dict.auth.submitLogin}
           </Link>
         </div>
       </div>

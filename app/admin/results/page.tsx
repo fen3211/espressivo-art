@@ -5,7 +5,8 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Table, Column } from '@/components/ui/Table';
-import { Trophy, Award, CheckCircle2, RefreshCw } from 'lucide-react';
+import { Trophy, RefreshCw } from 'lucide-react';
+import { useLanguage } from '@/components/LanguageContext';
 
 interface CalculationRow extends Record<string, unknown> {
   id: string;
@@ -13,11 +14,12 @@ interface CalculationRow extends Record<string, unknown> {
   participantName: string;
   nomination: string;
   scoreAvg: number;
-  calculatedAward: string;
+  awardKey: 'GRAND_PRIX' | 'LAUREATE_1' | 'LAUREATE_2' | 'LAUREATE_3';
   certificateStatus: string;
 }
 
 export default function AdminResultsCalculationPage() {
+  const { dict } = useLanguage();
   const [calculated, setCalculated] = useState(false);
   const [loading, setLoading] = useState(false);
   const [published, setPublished] = useState(false);
@@ -29,8 +31,8 @@ export default function AdminResultsCalculationPage() {
       participantName: 'Мария Васильева (16 лет)',
       nomination: 'Академический вокал (Соло)',
       scoreAvg: 100,
-      calculatedAward: 'Гран-при (Grand Prix)',
-      certificateStatus: 'ГОТОВ К ГЕНЕРАЦИИ',
+      awardKey: 'GRAND_PRIX',
+      certificateStatus: dict.admin.results.statusReady,
     },
     {
       id: '2',
@@ -38,8 +40,8 @@ export default function AdminResultsCalculationPage() {
       participantName: 'Алексеева София (13 лет)',
       nomination: 'Эстрадный вокал (Соло)',
       scoreAvg: 96,
-      calculatedAward: 'Лауреат I степени',
-      certificateStatus: 'ГОТОВ К ГЕНЕРАЦИИ',
+      awardKey: 'LAUREATE_1',
+      certificateStatus: dict.admin.results.statusReady,
     },
     {
       id: '3',
@@ -47,8 +49,8 @@ export default function AdminResultsCalculationPage() {
       participantName: 'Дмитрий Соколов (10 лет)',
       nomination: 'Академический вокал (Соло)',
       scoreAvg: 93,
-      calculatedAward: 'Лауреат II степени',
-      certificateStatus: 'ГОТОВ К ГЕНЕРАЦИИ',
+      awardKey: 'LAUREATE_2',
+      certificateStatus: dict.admin.results.statusReady,
     },
     {
       id: '4',
@@ -56,8 +58,8 @@ export default function AdminResultsCalculationPage() {
       participantName: 'Вокальный ансамбль «Созвучие»',
       nomination: 'Вокальные ансамбли',
       scoreAvg: 88,
-      calculatedAward: 'Лауреат III степени',
-      certificateStatus: 'ГОТОВ К ГЕНЕРАЦИИ',
+      awardKey: 'LAUREATE_3',
+      certificateStatus: dict.admin.results.statusReady,
     },
   ]);
 
@@ -78,7 +80,7 @@ export default function AdminResultsCalculationPage() {
       setData((prev) =>
         prev.map((item) => ({
           ...item,
-          certificateStatus: 'ДИПЛОМЫ СГЕНЕРИРОВАНЫ С QR',
+          certificateStatus: dict.admin.results.statusGenerated,
         }))
       );
     }, 600);
@@ -86,28 +88,28 @@ export default function AdminResultsCalculationPage() {
 
   const handlePublish = () => {
     setPublished(true);
-    alert('Официальные итоги сезона опубликованы на главном сайте и разосланы участникам!');
+    alert(dict.admin.results.resultsPublishedAlert);
   };
 
   const columns: Column<CalculationRow>[] = [
     {
       key: 'code',
-      header: 'Шифр заявки',
+      header: dict.admin.results.tableHeaders.code,
       render: (r) => <span className="font-mono text-xs text-[#6199f6]">{r.code}</span>,
     },
     {
       key: 'participantName',
-      header: 'Участник',
+      header: dict.admin.results.tableHeaders.participant,
       render: (r) => <span className="font-medium text-[#fcfcfc]">{r.participantName}</span>,
     },
     {
       key: 'nomination',
-      header: 'Номинация',
+      header: dict.admin.results.tableHeaders.nomination,
       render: (r) => <span className="text-sm text-[#dedfee]">{r.nomination}</span>,
     },
     {
       key: 'scoreAvg',
-      header: 'Итоговый балл',
+      header: dict.admin.results.tableHeaders.averageScore,
       render: (r) => (
         <span className="font-mono text-sm font-bold text-[#6199f6]">
           {r.scoreAvg} <span className="text-xs text-[#757580]">/ 100</span>
@@ -116,17 +118,17 @@ export default function AdminResultsCalculationPage() {
     },
     {
       key: 'calculatedAward',
-      header: 'Распределенная степень',
+      header: dict.admin.results.tableHeaders.calculatedAward,
       render: (r) => (
         <Badge
-          status={r.scoreAvg === 100 ? 'GRAND_PRIX' : 'LAUREATE_1'}
-          label={r.calculatedAward}
+          status={r.awardKey}
+          label={dict.awards[r.awardKey]}
         />
       ),
     },
     {
       key: 'certificateStatus',
-      header: 'Статус диплома',
+      header: dict.admin.results.tableHeaders.diplomaStatus,
       render: (r) => (
         <span className="font-mono text-xs text-[#22c55e]">
           {r.certificateStatus}
@@ -140,13 +142,13 @@ export default function AdminResultsCalculationPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-[#2a2a32]">
         <div>
           <div className="text-[11px] font-mono uppercase tracking-wider text-[#6199f6] mb-1">
-            DELIBERATION ENGINE
+            {dict.admin.results.tag}
           </div>
           <h1 className="text-2xl sm:text-3xl font-medium text-[#fcfcfc]">
-            Расчёт итогов и распределение наград
+            {dict.admin.results.title}
           </h1>
           <p className="text-xs sm:text-sm text-[#a3a3b3] mt-1">
-            Автоматическое сведение оценок жюри по 100-балльной шкале и генерация номеров дипломов
+            {dict.admin.results.subtitle}
           </p>
         </div>
 
@@ -158,7 +160,7 @@ export default function AdminResultsCalculationPage() {
             iconLeft={<RefreshCw className="w-4 h-4" />}
             onClick={handleCalculate}
           >
-            {calculated ? 'Пересчитать итоги' : 'Рассчитать итоги и дипломы'}
+            {calculated ? dict.admin.results.recalculateDoneBtn : dict.admin.results.recalculateBtn}
           </Button>
 
           <Button
@@ -168,7 +170,7 @@ export default function AdminResultsCalculationPage() {
             iconLeft={<Trophy className="w-4 h-4" />}
             onClick={handlePublish}
           >
-            {published ? 'Итоги опубликованы' : 'Опубликовать итоги сезона'}
+            {published ? dict.admin.results.publishedBtn : dict.admin.results.publishResultsBtn}
           </Button>
         </div>
       </div>

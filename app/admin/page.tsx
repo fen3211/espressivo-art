@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import {
   DollarSign,
-  Users,
   FileText,
   Award,
   Wallet,
@@ -16,34 +15,37 @@ import {
   Activity,
   ArrowRight,
 } from 'lucide-react';
+import { useLanguage } from '@/components/LanguageContext';
 
 export default function AdminDashboardPage() {
+  const { dict } = useLanguage();
+
   const metrics = [
     {
-      title: 'Валовая выручка (Оргвзносы)',
+      title: dict.admin.kpi.grossRevenue,
       value: '1 450 000 ₽',
-      sub: '+18% за последнюю неделю',
+      sub: dict.admin.dashboard.kpiSub.grossRevenue,
       icon: DollarSign,
       color: 'text-[#22c55e]',
     },
     {
-      title: 'Всего заявок в системе',
+      title: dict.admin.kpi.totalEntries,
       value: '580',
-      sub: '492 оплачены • 88 в ожидании',
+      sub: dict.admin.dashboard.kpiSub.totalEntries,
       icon: FileText,
       color: 'text-[#6199f6]',
     },
     {
-      title: 'Обязательства перед педагогами',
+      title: dict.admin.kpi.teacherLiabilities,
       value: '290 000 ₽',
-      sub: '20% комиссия за 580 заявок',
+      sub: dict.admin.dashboard.kpiSub.teacherLiabilities,
       icon: Wallet,
       color: 'text-[#eab308]',
     },
     {
-      title: 'Оформлено дипломов с QR',
+      title: dict.admin.kpi.issuedDiplomas,
       value: '215',
-      sub: 'Доступны для скачивания в PDF',
+      sub: dict.admin.dashboard.kpiSub.issuedDiplomas,
       icon: Award,
       color: 'text-[#dedfee]',
     },
@@ -55,20 +57,20 @@ export default function AdminDashboardPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-[#2a2a32]">
         <div>
           <div className="text-[11px] font-mono uppercase tracking-wider text-[#6199f6] mb-1">
-            CONTROL CORE // PLATFORM COMMAND CENTER
+            {dict.admin.dashboard.tag}
           </div>
           <h1 className="text-2xl sm:text-3xl font-medium text-[#fcfcfc]">
-            Сводные KPI платформы espressivo ART
+            {dict.admin.dashboard.title}
           </h1>
           <p className="text-xs sm:text-sm text-[#a3a3b3] mt-1">
-            Мониторинг оплат, модерации заявок, активности жюри и партнерских выплат
+            {dict.admin.dashboard.subtitle}
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <Link href="/admin/results">
             <Button variant="iris-action" size="md" iconLeft={<Award className="w-4 h-4" />}>
-              Расчёт итогов сезона
+              {dict.admin.dashboard.seasonResultsBtn}
             </Button>
           </Link>
         </div>
@@ -100,9 +102,9 @@ export default function AdminDashboardPage() {
             <CheckCircle2 className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-xs font-mono uppercase text-[#757580]">Платёжный шлюз</div>
-            <div className="text-sm font-medium text-[#fcfcfc]">Банковский эквайринг активен</div>
-            <div className="text-[11px] text-[#22c55e]">Успешность транзакций: 99.4%</div>
+            <div className="text-xs font-mono uppercase text-[#757580]">{dict.admin.infrastructure.paymentGateway}</div>
+            <div className="text-sm font-medium text-[#fcfcfc]">{dict.admin.infrastructure.paymentGatewayActive}</div>
+            <div className="text-[11px] text-[#22c55e]">{dict.admin.dashboard.infra.gatewaySuccess}</div>
           </div>
         </Card>
 
@@ -111,9 +113,9 @@ export default function AdminDashboardPage() {
             <Activity className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-xs font-mono uppercase text-[#757580]">CDN Видеотерминала</div>
-            <div className="text-sm font-medium text-[#fcfcfc]">YouTube / Rutube Embeds</div>
-            <div className="text-[11px] text-[#6199f6]">Защищённый режим потока активен</div>
+            <div className="text-xs font-mono uppercase text-[#757580]">{dict.admin.dashboard.infra.videoCdn}</div>
+            <div className="text-sm font-medium text-[#fcfcfc]">{dict.admin.dashboard.infra.videoEmbeds}</div>
+            <div className="text-[11px] text-[#6199f6]">{dict.admin.dashboard.infra.videoProtected}</div>
           </div>
         </Card>
 
@@ -122,9 +124,9 @@ export default function AdminDashboardPage() {
             <AlertCircle className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-xs font-mono uppercase text-[#757580]">Запросы выплат</div>
-            <div className="text-sm font-medium text-[#fcfcfc]">3 запроса педагогов</div>
-            <div className="text-[11px] text-[#eab308]">Ожидают подтверждения оргкомитета</div>
+            <div className="text-xs font-mono uppercase text-[#757580]">{dict.admin.infrastructure.pendingPayouts}</div>
+            <div className="text-sm font-medium text-[#fcfcfc]">{dict.admin.dashboard.infra.payoutTeacherCount}</div>
+            <div className="text-[11px] text-[#eab308]">{dict.admin.infrastructure.pendingPayoutsNotice}</div>
           </div>
         </Card>
       </div>
@@ -134,17 +136,17 @@ export default function AdminDashboardPage() {
         <Card interactive padding="lg" className="space-y-3">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-medium text-[#fcfcfc]">
-              Модерация конкурсных заявок
+              {dict.admin.dashboard.cards.moderationTitle}
             </h3>
             <span className="text-xs font-mono text-[#6199f6] bg-[rgba(97,153,246,0.12)] px-2 py-0.5 rounded-full">
-              42 новые
+              {dict.admin.dashboard.cards.moderationBadge}
             </span>
           </div>
           <p className="text-xs text-[#a3a3b3] leading-relaxed">
-            Проверка соответствия видеозаписей (отсутствие склеек, качество звука) и распределение по судьям.
+            {dict.admin.dashboard.cards.moderationDesc}
           </p>
           <Link href="/admin/applications" className="inline-flex items-center gap-1.5 text-xs text-[#6199f6] font-mono hover:underline pt-2">
-            <span>Открыть панель модерации</span>
+            <span>{dict.admin.dashboard.cards.moderationLink}</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </Card>
@@ -152,17 +154,17 @@ export default function AdminDashboardPage() {
         <Card interactive padding="lg" className="space-y-3">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-medium text-[#fcfcfc]">
-              Одобрение выплат педагогам
+              {dict.admin.dashboard.cards.payoutsTitle}
             </h3>
             <span className="text-xs font-mono text-[#eab308] bg-[rgba(234,179,8,0.12)] px-2 py-0.5 rounded-full">
-              18 500 ₽ к выплате
+              {dict.admin.dashboard.cards.payoutsBadge}
             </span>
           </div>
           <p className="text-xs text-[#a3a3b3] leading-relaxed">
-            Проверка банковских реквизитов преподавателей и подтверждение банковских переводов.
+            {dict.admin.dashboard.cards.payoutsDesc}
           </p>
           <Link href="/admin/payouts" className="inline-flex items-center gap-1.5 text-xs text-[#6199f6] font-mono hover:underline pt-2">
-            <span>Реестр выплат наставникам</span>
+            <span>{dict.admin.dashboard.cards.payoutsLink}</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </Card>

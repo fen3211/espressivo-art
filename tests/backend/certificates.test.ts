@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeAll, vi } from "vitest";
 import prisma from "@/lib/prisma";
 import { generateCertificatePdf } from "@/lib/certificates";
 import { GET as verifyCertificateHandler } from "@/app/api/public/verify-certificate/[token]/route";
@@ -50,6 +50,43 @@ describe("Certificates & High-Print Diploma Module", () => {
     // Verify PDF header magic bytes %PDF-
     const header = buffer.subarray(0, 5).toString("ascii");
     expect(header).toBe("%PDF-");
+
+    // Verify PDF contains embedded image XObject (/Image)
+    const pdfContent = buffer.toString("binary");
+    expect(pdfContent).toContain("/Subtype /Image");
+  });
+
+  it("should gracefully handle absence of Windows fonts (Linux/Docker fallback) without throwing ENOENT", async () => {
+    // Temporarily mock fs.existsSync to simulate Linux container without C:/Windows/Fonts
+    const originalExistsSync = (await import("fs")).default.existsSync;
+    const fsMod = (await import("fs")).default;
+
+    const spy = vi.spyOn(fsMod, "existsSync").mockImplementation((p) => {
+      if (typeof p === "string" && (p.includes("Windows") || p.includes(".ttf"))) {
+        return false;
+      }
+      return originalExistsSync(p);
+    });
+
+    try {
+      const buffer = await generateCertificatePdf({
+        certificateNumber: "ESP-VOC-2026-FALLBACK-L1",
+        participantName: "Владимир Васильев",
+        competitionTitle: "Международный конкурс",
+        nominationTitle: "Академический вокал",
+        awardDegree: "GRAND_PRIX",
+        totalScore: 99.0,
+        issuedDate: new Date(),
+        qrCodeToken: "fallback_qr_token_67890",
+        teacherName: "Иванов И.И.",
+      });
+
+      expect(buffer).toBeInstanceOf(Buffer);
+      expect(buffer.subarray(0, 5).toString("ascii")).toBe("%PDF-");
+      expect(buffer.length).toBeGreaterThan(1000);
+    } finally {
+      spy.mockRestore();
+    }
   });
 
   it("should verify genuine certificate via public verification route", async () => {

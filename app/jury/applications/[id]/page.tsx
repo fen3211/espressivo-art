@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
+import { useLanguage } from '@/components/LanguageContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -14,6 +15,7 @@ export default function JuryAdjudicationTerminalPage() {
   const params = useParams();
   const router = useRouter();
   const id = (params?.id as string) || 'app-001';
+  const { locale, dict } = useLanguage();
 
   // 4 Criteria Scores (0 to 25 each)
   const [scoreTechnique, setScoreTechnique] = useState<number>(24);
@@ -22,7 +24,9 @@ export default function JuryAdjudicationTerminalPage() {
   const [scoreRepertoire, setScoreRepertoire] = useState<number>(23);
 
   const [comment, setComment] = useState<string>(
-    'Великолепное владение кантиленой и чистота интонирования в среднем регистре. Прекрасное ощущение барочной фразировки. Рекомендуется обратить внимание на опору дыхания в верхних кульминационных нотах.'
+    locale === 'ru'
+      ? 'Великолепное владение кантиленой и чистота интонирования в среднем регистре. Прекрасное ощущение барочной фразировки. Рекомендуется обратить внимание на опору дыхания в верхних кульминационных нотах.'
+      : 'Superb cantilena control and intonational purity in the middle register. Excellent sense of Baroque phrasing. Pay close attention to breath support on peak high notes.'
   );
 
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
@@ -32,23 +36,23 @@ export default function JuryAdjudicationTerminalPage() {
   const totalScore = scoreTechnique + scoreMusicality + scoreArtistry + scoreRepertoire;
 
   // Calculate projected award
-  let projectedAward = 'Грамота за участие';
+  let projectedAward = dict.awards.PARTICIPANT;
   let badgeStatus = 'PARTICIPANT';
 
   if (totalScore === 100) {
-    projectedAward = 'Гран-при (Grand Prix)';
+    projectedAward = dict.awards.GRAND_PRIX;
     badgeStatus = 'GRAND_PRIX';
   } else if (totalScore >= 95) {
-    projectedAward = 'Лауреат I степени';
+    projectedAward = dict.awards.LAUREATE_1;
     badgeStatus = 'LAUREATE_1';
   } else if (totalScore >= 90) {
-    projectedAward = 'Лауреат II степени';
+    projectedAward = dict.awards.LAUREATE_2;
     badgeStatus = 'LAUREATE_2';
   } else if (totalScore >= 85) {
-    projectedAward = 'Лауреат III степени';
+    projectedAward = dict.awards.LAUREATE_3;
     badgeStatus = 'LAUREATE_3';
   } else if (totalScore >= 80) {
-    projectedAward = 'Дипломант';
+    projectedAward = dict.awards.DIPLOMANT;
     badgeStatus = 'DIPLOMANT';
   }
 
@@ -97,23 +101,29 @@ export default function JuryAdjudicationTerminalPage() {
           <div className="flex items-center gap-3 text-[11px] font-mono uppercase tracking-wider text-[#6199f6] mb-1">
             <Link href="/jury/applications" className="hover:underline flex items-center gap-1">
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>К очереди оценивания</span>
+              <span>{dict.jury.terminal.backToQueue}</span>
             </Link>
             <span>/</span>
             <span>ENTRY // EXP-2026-0042</span>
           </div>
           <h1 className="text-xl sm:text-2xl font-medium text-[#fcfcfc]">
-            Терминал оценивания: Дж. Перголези — Канцона &quot;Se tu m&apos;ami&quot;
+            {locale === 'ru'
+              ? 'Терминал оценивания: Дж. Перголези — Канцона "Se tu m\'ami"'
+              : 'Adjudication Terminal: G. Pergolesi — Canzona "Se tu m\'ami"'}
           </h1>
           <p className="text-xs text-[#a3a3b3]">
-            Академический вокал (Соло) • Группа II (12–14 лет) • Хронометраж: 3:30 мин
+            {locale === 'ru'
+              ? 'Академический вокал (Соло) • Группа II (12–14 лет) • Хронометраж: 3:30 мин'
+              : 'Academic Vocal (Solo) • Group II (12–14 yrs) • Duration: 3:30 min'}
           </p>
         </div>
 
         {/* Live Total Score Pill */}
         <div className="flex items-center gap-3">
           <div className="px-5 py-2 rounded-full bg-[#040407] border border-[#4f4f80] flex items-center gap-3 shadow-[0_0_16px_rgba(97,153,246,0.15)]">
-            <span className="text-xs text-[#757580] uppercase font-mono">Сумма баллов:</span>
+            <span className="text-xs text-[#757580] uppercase font-mono">
+              {locale === 'ru' ? 'Сумма баллов:' : 'Total Score:'}
+            </span>
             <span className="text-2xl font-mono font-bold text-[#6199f6]">
               {totalScore} <span className="text-xs text-[#757580]">/ 100</span>
             </span>
@@ -128,14 +138,14 @@ export default function JuryAdjudicationTerminalPage() {
         <div className="lg:col-span-7 space-y-4">
           <ProtectedVideoPlayer
             videoUrl="https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-            title="Дж. Перголези — Канцона 'Se tu m'ami'"
+            title="G. Pergolesi — Canzona 'Se tu m'ami'"
             participantCode="EXP-2026-0042"
           />
 
           <div className="p-3 rounded-[8px] bg-[#08080c] border border-[#2a2a32] text-xs text-[#757580] flex items-center justify-between">
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-[#6199f6]" />
-              <span>Режим слепого прослушивания скрывает персональные данные участника</span>
+              <span>{dict.jury.terminal.blindListeningNotice}</span>
             </div>
             <span className="font-mono text-[#dedfee]">1080p verified</span>
           </div>
@@ -146,7 +156,7 @@ export default function JuryAdjudicationTerminalPage() {
           <Card padding="md" className="space-y-5">
             <div className="border-b border-[#2a2a32] pb-3 flex justify-between items-center">
               <h3 className="text-sm font-medium text-[#fcfcfc] uppercase font-mono">
-                Критерии оценивания (100 баллов)
+                {dict.jury.terminal.rubricTitle}
               </h3>
               <span className="text-[10px] font-mono text-[#6199f6]">4 x 25 PTS</span>
             </div>
@@ -155,8 +165,8 @@ export default function JuryAdjudicationTerminalPage() {
             <div className="space-y-1.5">
               <div className="flex justify-between items-baseline text-xs">
                 <div>
-                  <span className="font-medium text-[#fcfcfc]">1. Вокальная техника и интонация</span>
-                  <div className="text-[11px] text-[#757580]">Чистота строя, опора дыхания, дикция</div>
+                  <span className="font-medium text-[#fcfcfc]">{dict.jury.terminal.criterion1Title}</span>
+                  <div className="text-[11px] text-[#757580]">{dict.jury.terminal.criterion1Desc}</div>
                 </div>
                 <span className="font-mono text-base font-bold text-[#6199f6]">
                   {scoreTechnique} <span className="text-xs text-[#757580]">/ 25</span>
@@ -177,8 +187,8 @@ export default function JuryAdjudicationTerminalPage() {
             <div className="space-y-1.5">
               <div className="flex justify-between items-baseline text-xs">
                 <div>
-                  <span className="font-medium text-[#fcfcfc]">2. Музыкальность и фразировка</span>
-                  <div className="text-[11px] text-[#757580]">Чувство стиля, ритмика, динамические оттенки</div>
+                  <span className="font-medium text-[#fcfcfc]">{dict.jury.terminal.criterion2Title}</span>
+                  <div className="text-[11px] text-[#757580]">{dict.jury.terminal.criterion2Desc}</div>
                 </div>
                 <span className="font-mono text-base font-bold text-[#6199f6]">
                   {scoreMusicality} <span className="text-xs text-[#757580]">/ 25</span>
@@ -199,8 +209,8 @@ export default function JuryAdjudicationTerminalPage() {
             <div className="space-y-1.5">
               <div className="flex justify-between items-baseline text-xs">
                 <div>
-                  <span className="font-medium text-[#fcfcfc]">3. Артистизм и сценический образ</span>
-                  <div className="text-[11px] text-[#757580]">Эмоциональность, раскрытие художественного замысла</div>
+                  <span className="font-medium text-[#fcfcfc]">{dict.jury.terminal.criterion3Title}</span>
+                  <div className="text-[11px] text-[#757580]">{dict.jury.terminal.criterion3Desc}</div>
                 </div>
                 <span className="font-mono text-base font-bold text-[#6199f6]">
                   {scoreArtistry} <span className="text-xs text-[#757580]">/ 25</span>
@@ -221,8 +231,8 @@ export default function JuryAdjudicationTerminalPage() {
             <div className="space-y-1.5">
               <div className="flex justify-between items-baseline text-xs">
                 <div>
-                  <span className="font-medium text-[#fcfcfc]">4. Сложность репертуара</span>
-                  <div className="text-[11px] text-[#757580]">Соответствие возрасту и технической зрелости</div>
+                  <span className="font-medium text-[#fcfcfc]">{dict.jury.terminal.criterion4Title}</span>
+                  <div className="text-[11px] text-[#757580]">{dict.jury.terminal.criterion4Desc}</div>
                 </div>
                 <span className="font-mono text-base font-bold text-[#6199f6]">
                   {scoreRepertoire} <span className="text-xs text-[#757580]">/ 25</span>
@@ -242,13 +252,15 @@ export default function JuryAdjudicationTerminalPage() {
             {/* Written Critique Textarea */}
             <div className="space-y-2 pt-2 border-t border-[#2a2a32]">
               <label className="text-xs font-medium text-[#a3a3b3] block">
-                Письменная рецензия для участника и педагога:
+                {locale === 'ru'
+                  ? 'Письменная рецензия для участника и педагога:'
+                  : 'Written critique for entrant & pedagogue:'}
               </label>
               <textarea
                 rows={4}
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                placeholder="Укажите сильные стороны исполнения и рекомендации для дальнейшего роста..."
+                placeholder={dict.jury.terminal.critiquePlaceholder}
                 className="w-full p-3 rounded-[8px] bg-[#040407] border border-[#2a2a32] text-xs text-[#fcfcfc] placeholder:text-[#757580] focus:outline-none focus:border-[#6199f6] resize-none"
               />
             </div>
@@ -262,7 +274,9 @@ export default function JuryAdjudicationTerminalPage() {
                 iconLeft={<Save className="w-4 h-4" />}
                 onClick={handleSaveDraft}
               >
-                {draftSaved ? 'Черновик сохранен' : 'Сохранить черновик'}
+                {draftSaved
+                  ? (locale === 'ru' ? 'Черновик сохранен' : 'Draft Saved')
+                  : dict.jury.terminal.saveDraftBtn}
               </Button>
 
               <Button
@@ -272,7 +286,9 @@ export default function JuryAdjudicationTerminalPage() {
                 iconLeft={<CheckCircle2 className="w-4 h-4" />}
                 onClick={() => setConfirmModalOpen(true)}
               >
-                Финализировать оценку ({totalScore})
+                {locale === 'ru'
+                  ? `Финализировать оценку (${totalScore})`
+                  : `Finalize Score (${totalScore})`}
               </Button>
             </div>
           </Card>
@@ -283,14 +299,14 @@ export default function JuryAdjudicationTerminalPage() {
       <Modal
         isOpen={confirmModalOpen}
         onClose={() => setConfirmModalOpen(false)}
-        title="Подтверждение финализации судейства"
+        title={dict.jury.terminal.confirmModalTitle}
         footer={
           <>
             <Button variant="ghost" size="sm" onClick={() => setConfirmModalOpen(false)}>
-              Вернуться к редактированию
+              {dict.jury.terminal.confirmNoBtn}
             </Button>
             <Button variant="iris-action" size="sm" loading={loading} onClick={handleFinalize}>
-              Подписать и зафиксировать оценку
+              {dict.jury.terminal.confirmYesBtn}
             </Button>
           </>
         }
@@ -300,10 +316,12 @@ export default function JuryAdjudicationTerminalPage() {
             <AlertTriangle className="w-6 h-6 shrink-0 mt-0.5" />
             <div>
               <div className="font-medium text-sm text-[#fcfcfc]">
-                Внимание: фиксация оценки необратима
+                {locale === 'ru'
+                  ? 'Внимание: фиксация оценки необратима'
+                  : 'Notice: score submission is irreversible'}
               </div>
               <div className="text-xs text-[#a3a3b3] mt-1 leading-relaxed">
-                Вы выставляете <strong className="text-[#6199f6]">{totalScore} баллов</strong> (прогнозируется: <strong>{projectedAward}</strong>). После подтверждения протокол будет заблокирован для изменений и подписан вашим цифровым профилем жюри.
+                {dict.jury.terminal.confirmModalWarning}
               </div>
             </div>
           </div>

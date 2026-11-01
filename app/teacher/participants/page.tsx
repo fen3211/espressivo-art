@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useLanguage } from '@/components/LanguageContext';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Table, Column } from '@/components/ui/Table';
@@ -9,9 +10,12 @@ import { Search } from 'lucide-react';
 interface StudentRow extends Record<string, unknown> {
   id: string;
   code: string;
-  studentName: string;
-  nomination: string;
-  category: string;
+  studentNameRu: string;
+  studentNameEn: string;
+  nominationRu: string;
+  nominationEn: string;
+  categoryRu: string;
+  categoryEn: string;
   applicationStatus: string;
   paymentStatus: string;
   fee: number;
@@ -20,15 +24,19 @@ interface StudentRow extends Record<string, unknown> {
 }
 
 export default function TeacherParticipantsPage() {
+  const { locale, dict } = useLanguage();
   const [search, setSearch] = useState('');
 
   const students: StudentRow[] = [
     {
       id: '1',
       code: 'EXP-2026-0042',
-      studentName: 'София Алексеева (13 лет)',
-      nomination: 'Академический вокал (Соло)',
-      category: 'Группа II (12–14 лет)',
+      studentNameRu: 'София Алексеева (13 лет)',
+      studentNameEn: 'Sofia Alekseeva (13 yrs)',
+      nominationRu: 'Академический вокал (Соло)',
+      nominationEn: 'Academic Vocal (Solo)',
+      categoryRu: 'Группа II (12–14 лет)',
+      categoryEn: 'Group II (12–14 yrs)',
       applicationStatus: 'UNDER_REVIEW',
       paymentStatus: 'PAID',
       fee: 2500,
@@ -38,9 +46,12 @@ export default function TeacherParticipantsPage() {
     {
       id: '2',
       code: 'EXP-2026-0089',
-      studentName: 'София Алексеева (13 лет)',
-      nomination: 'Эстрадный вокал (Соло)',
-      category: 'Группа II (12–14 лет)',
+      studentNameRu: 'София Алексеева (13 лет)',
+      studentNameEn: 'Sofia Alekseeva (13 yrs)',
+      nominationRu: 'Эстрадный вокал (Соло)',
+      nominationEn: 'Pop & Contemporary Vocal (Solo)',
+      categoryRu: 'Группа II (12–14 лет)',
+      categoryEn: 'Group II (12–14 yrs)',
       applicationStatus: 'EVALUATED',
       paymentStatus: 'PAID',
       fee: 2500,
@@ -50,9 +61,12 @@ export default function TeacherParticipantsPage() {
     {
       id: '3',
       code: 'EXP-2026-0104',
-      studentName: 'Михаил Захаров (15 лет)',
-      nomination: 'Эстрадный вокал (Соло)',
-      category: 'Группа III (15–17 лет)',
+      studentNameRu: 'Михаил Захаров (15 лет)',
+      studentNameEn: 'Mikhail Zakharov (15 yrs)',
+      nominationRu: 'Эстрадный вокал (Соло)',
+      nominationEn: 'Pop & Contemporary Vocal (Solo)',
+      categoryRu: 'Группа III (15–17 лет)',
+      categoryEn: 'Group III (15–17 yrs)',
       applicationStatus: 'EVALUATED',
       paymentStatus: 'PAID',
       fee: 2500,
@@ -62,9 +76,12 @@ export default function TeacherParticipantsPage() {
     {
       id: '4',
       code: 'EXP-2026-0155',
-      studentName: 'Екатерина Морозова (9 лет)',
-      nomination: 'Джазовый вокал',
-      category: 'Группа I (9–11 лет)',
+      studentNameRu: 'Екатерина Морозова (9 лет)',
+      studentNameEn: 'Ekaterina Morozova (9 yrs)',
+      nominationRu: 'Джазовый вокал',
+      nominationEn: 'Jazz Vocal',
+      categoryRu: 'Группа I (9–11 лет)',
+      categoryEn: 'Group I (9–11 yrs)',
       applicationStatus: 'PAYMENT_PENDING',
       paymentStatus: 'PENDING',
       fee: 2500,
@@ -73,45 +90,55 @@ export default function TeacherParticipantsPage() {
     },
   ];
 
-  const filtered = students.filter((s) =>
-    s.studentName.toLowerCase().includes(search.toLowerCase()) ||
-    s.code.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = students.filter((s) => {
+    const name = locale === 'ru' ? s.studentNameRu : s.studentNameEn;
+    return (
+      name.toLowerCase().includes(search.toLowerCase()) ||
+      s.code.toLowerCase().includes(search.toLowerCase())
+    );
+  });
 
   const columns: Column<StudentRow>[] = [
     {
       key: 'code',
-      header: 'Шифр заявки',
+      header: dict.teacher.tableHeaders.entryCode,
       render: (r) => <span className="font-mono text-xs text-[#6199f6]">{r.code}</span>,
     },
     {
       key: 'studentName',
-      header: 'Ученик',
+      header: dict.teacher.tableHeaders.studentName,
       render: (r) => (
         <div>
-          <div className="font-medium text-[#fcfcfc]">{r.studentName}</div>
-          <div className="text-xs text-[#757580]">{r.category}</div>
+          <div className="font-medium text-[#fcfcfc]">
+            {locale === 'ru' ? r.studentNameRu : r.studentNameEn}
+          </div>
+          <div className="text-xs text-[#757580]">
+            {locale === 'ru' ? r.categoryRu : r.categoryEn}
+          </div>
         </div>
       ),
     },
     {
       key: 'nomination',
-      header: 'Номинация',
-      render: (r) => <span className="text-sm text-[#dedfee]">{r.nomination}</span>,
+      header: dict.teacher.tableHeaders.nomination,
+      render: (r) => (
+        <span className="text-sm text-[#dedfee]">
+          {locale === 'ru' ? r.nominationRu : r.nominationEn}
+        </span>
+      ),
     },
     {
       key: 'paymentStatus',
-      header: 'Статус оплаты',
+      header: dict.teacher.tableHeaders.status,
       render: (r) => (
         <Badge
           status={r.paymentStatus === 'PAID' ? 'PAID' : 'PAYMENT_PENDING'}
-          label={r.paymentStatus === 'PAID' ? 'Оплачено' : 'Ожидает оплаты'}
         />
       ),
     },
     {
       key: 'commission',
-      header: 'Ваш бонус (20%)',
+      header: dict.teacher.tableHeaders.commissionEarned,
       render: (r) => (
         <span className={`font-mono text-sm font-semibold ${r.paymentStatus === 'PAID' ? 'text-[#22c55e]' : 'text-[#757580]'}`}>
           +{r.commission} ₽
@@ -120,7 +147,7 @@ export default function TeacherParticipantsPage() {
     },
     {
       key: 'registeredAt',
-      header: 'Дата подачи',
+      header: dict.teacher.tableHeaders.date,
       render: (r) => <span className="text-xs text-[#757580]">{r.registeredAt}</span>,
     },
   ];
@@ -132,10 +159,10 @@ export default function TeacherParticipantsPage() {
           STUDENT REGISTRY
         </div>
         <h1 className="text-2xl sm:text-3xl font-medium text-[#fcfcfc]">
-          Мои ученики и заявки
+          {locale === 'ru' ? 'Мои ученики и заявки' : 'My Students & Submissions'}
         </h1>
         <p className="text-xs sm:text-sm text-[#a3a3b3] mt-1">
-          Реестр заявок, оформленных по вашему реферальному коду
+          {dict.teacher.studentsRegistryDesc}
         </p>
       </div>
 
@@ -146,13 +173,21 @@ export default function TeacherParticipantsPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Поиск по имени ученика или шифру..."
+            placeholder={
+              locale === 'ru'
+                ? 'Поиск по имени ученика или шифру...'
+                : 'Search by student name or code...'
+            }
             className="w-full h-9 pl-9 pr-3 rounded-full bg-[#040407] border border-[#2a2a32] text-xs text-[#fcfcfc] placeholder:text-[#757580] focus:outline-none focus:border-[#6199f6]"
           />
         </div>
       </div>
 
-      <Table columns={columns} data={filtered} />
+      <Table
+        columns={columns}
+        data={filtered}
+        emptyText={dict.teacher.emptyStudentsTitle}
+      />
     </div>
   );
 }

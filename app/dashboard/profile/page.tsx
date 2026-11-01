@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useLanguage } from '@/components/LanguageContext';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { User, Shield, Check } from 'lucide-react';
 
 export default function ProfilePage() {
+  const { locale, dict } = useLanguage();
   const [fullName, setFullName] = useState('Алексеева Елена Викторовна');
   const [email, setEmail] = useState('elena.singer@example.com');
   const [phone, setPhone] = useState('+7 (999) 123-45-67');
@@ -25,34 +26,36 @@ export default function ProfilePage() {
           ACCOUNT SETTINGS
         </div>
         <h1 className="text-2xl sm:text-3xl font-medium text-[#fcfcfc]">
-          Профиль пользователя
+          {locale === 'ru' ? 'Профиль пользователя' : 'User Profile'}
         </h1>
         <p className="text-xs sm:text-sm text-[#a3a3b3] mt-1">
-          Контактные данные для связи и отправки электронных дипломов
+          {locale === 'ru'
+            ? 'Контактные данные для связи и отправки электронных дипломов'
+            : 'Contact credentials for communication and certificate delivery'}
         </p>
       </div>
 
       <form onSubmit={handleSave} className="space-y-6">
         <Card padding="lg" className="space-y-5">
           <h2 className="text-base font-medium text-[#fcfcfc] border-b border-[#2a2a32] pb-3">
-            Персональные данные
+            {locale === 'ru' ? 'Персональные данные' : 'Personal Details'}
           </h2>
 
           <Input
-            label="ФИО Родителя / Представителя"
+            label={locale === 'ru' ? 'ФИО Родителя / Представителя' : 'Guardian / Entrant Full Name'}
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input
-              label="Электронная почта"
+              label={dict.auth.emailLabel}
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
             <Input
-              label="Номер телефона"
+              label={dict.dashboard.wizard.legalGuardianPhone}
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
@@ -61,7 +64,9 @@ export default function ProfilePage() {
 
           <div className="pt-2 flex justify-end">
             <Button variant="iris-action" size="md" type="submit">
-              {saved ? 'Изменения сохранены' : 'Сохранить изменения'}
+              {saved
+                ? (locale === 'ru' ? 'Изменения сохранены' : 'Changes Saved')
+                : dict.common.save}
             </Button>
           </div>
         </Card>

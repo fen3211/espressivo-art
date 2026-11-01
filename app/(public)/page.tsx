@@ -331,33 +331,49 @@ export default function HomePage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           <div className="border-t-2 border-[#000000] pt-4">
             <div className="text-sm font-mono text-[#757580] mb-2">01 // BLIND MODE</div>
-            <h4 className="text-lg font-serif text-[#000000] mb-2">Слепое прослушивание</h4>
+            <h4 className="text-lg font-serif text-[#000000] mb-2">
+              {locale === 'ru' ? 'Слепое прослушивание' : 'Blind Audition'}
+            </h4>
             <p className="text-xs font-serif text-[#121212] leading-relaxed">
-              Члены жюри оценивают записи в режиме скрытого видеоряда, исключая предвзятость по возрасту, костюму или внешности.
+              {locale === 'ru'
+                ? 'Члены жюри оценивают записи в режиме скрытого видеоряда, исключая предвзятость по возрасту, костюму или внешности.'
+                : 'Jury members evaluate submissions in audio-only blind mode, eliminating bias regarding age, attire, or appearance.'}
             </p>
           </div>
 
           <div className="border-t-2 border-[#000000] pt-4">
             <div className="text-sm font-mono text-[#757580] mb-2">02 // 100 PTS RUBRIC</div>
-            <h4 className="text-lg font-serif text-[#000000] mb-2">100-балльная шкала</h4>
+            <h4 className="text-lg font-serif text-[#000000] mb-2">
+              {locale === 'ru' ? '100-балльная шкала' : '100-Point Rubric'}
+            </h4>
             <p className="text-xs font-serif text-[#121212] leading-relaxed">
-              4 критерия по 25 баллов: техника вокала, чистота интонации, сценический артистизм и сложность произведения.
+              {locale === 'ru'
+                ? '4 критерия по 25 баллов: техника вокала, чистота интонации, сценический артистизм и сложность произведения.'
+                : '4 criteria, 25 points each: vocal technique, intonation purity, artistic stagecraft, and repertoire complexity.'}
             </p>
           </div>
 
           <div className="border-t-2 border-[#000000] pt-4">
             <div className="text-sm font-mono text-[#757580] mb-2">03 // PERSONAL REVIEW</div>
-            <h4 className="text-lg font-serif text-[#000000] mb-2">Текстовые рецензии</h4>
+            <h4 className="text-lg font-serif text-[#000000] mb-2">
+              {locale === 'ru' ? 'Текстовые рецензии' : 'Written Critiques'}
+            </h4>
             <p className="text-xs font-serif text-[#121212] leading-relaxed">
-              Каждый участник получает развёрнутый профессиональный отзыв от европейских педагогов для дальнейшего роста.
+              {locale === 'ru'
+                ? 'Каждый участник получает развёрнутый профессиональный отзыв от европейских педагогов для дальнейшего роста.'
+                : 'Every entrant receives an in-depth professional critique from conservatory professors to foster artistic growth.'}
             </p>
           </div>
 
           <div className="border-t-2 border-[#000000] pt-4">
             <div className="text-sm font-mono text-[#757580] mb-2">04 // VERIFIED DIPLOMAS</div>
-            <h4 className="text-lg font-serif text-[#000000] mb-2">Дипломы с QR-защитой</h4>
+            <h4 className="text-lg font-serif text-[#000000] mb-2">
+              {locale === 'ru' ? 'Дипломы с QR-защитой' : 'QR-Verified Diplomas'}
+            </h4>
             <p className="text-xs font-serif text-[#121212] leading-relaxed">
-              Официальные дипломы международного образца с нестираемым реестровым номером в мировом каталоге.
+              {locale === 'ru'
+                ? 'Официальные дипломы международного образца с нестираемым реестровым номером в мировом каталоге.'
+                : 'Official international certificates featuring tamper-proof cryptographic registry verification.'}
             </p>
           </div>
         </div>

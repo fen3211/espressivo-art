@@ -1,25 +1,34 @@
 'use client';
 
 import React from 'react';
-import { Card } from '@/components/ui/Card';
+import { useLanguage } from '@/components/LanguageContext';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { Download, Award, ShieldCheck, QrCode } from 'lucide-react';
+import { Download, QrCode } from 'lucide-react';
 
 export default function CertificatesPage() {
+  const { locale, dict } = useLanguage();
+
   const certificateData = {
     number: 'ESP-VOC-2026-0089-L1',
-    participantName: 'Алексеева София Андреевна',
+    participantNameRu: 'Алексеева София Андреевна',
+    participantNameEn: 'Sofia Alekseeva',
     competitionTitle: 'espressivo VOCAL — Young Talents (Season 2026)',
-    nominationTitle: 'Эстрадный вокал (Соло) • Группа II (12–14 лет)',
-    awardDegree: 'Лауреат I степени',
-    teacherName: 'Иванова Анна Сергеевна',
+    nominationTitleRu: 'Эстрадный вокал (Соло) • Группа II (12–14 лет)',
+    nominationTitleEn: 'Pop & Contemporary Vocal (Solo) • Group II (12–14 yrs)',
+    awardDegree: dict.awards.LAUREATE_1,
+    teacherNameRu: 'Иванова Анна Сергеевна',
+    teacherNameEn: 'Anna Ivanova',
     issueDate: '02.05.2026',
-    presidentJury: 'Проф. Вальтер Кауфманн (Венская опера)',
+    presidentJuryRu: 'Проф. Вальтер Кауфманн (Венская опера)',
+    presidentJuryEn: 'Prof. Walter Kaufmann (Vienna State Opera)',
   };
 
   const handleDownloadPdf = () => {
-    alert(`Формирование защищенного полиграфического PDF диплома #${certificateData.number}`);
+    alert(
+      locale === 'ru'
+        ? `Формирование защищенного полиграфического PDF диплома #${certificateData.number}`
+        : `Generating secure high-resolution print PDF diploma #${certificateData.number}`
+    );
   };
 
   return (
@@ -31,10 +40,12 @@ export default function CertificatesPage() {
             CREDENTIAL REPOSITORY
           </div>
           <h1 className="text-2xl sm:text-3xl font-medium text-[#fcfcfc]">
-            Электронные дипломы и сертификаты
+            {locale === 'ru' ? 'Электронные дипломы и сертификаты' : 'Digital Diplomas & Certificates'}
           </h1>
           <p className="text-xs sm:text-sm text-[#a3a3b3] mt-1">
-            Официальные международные дипломы с верификационным QR-кодом
+            {locale === 'ru'
+              ? 'Официальные международные дипломы с верификационным QR-кодом'
+              : 'Official international certificates with verified QR credentials'}
           </p>
         </div>
 
@@ -44,7 +55,7 @@ export default function CertificatesPage() {
           iconLeft={<Download className="w-4 h-4" />}
           onClick={handleDownloadPdf}
         >
-          Скачать диплом (PDF)
+          {dict.dashboard.details.downloadDiploma}
         </Button>
       </div>
 
@@ -59,7 +70,9 @@ export default function CertificatesPage() {
         {/* Header */}
         <div className="text-center space-y-2 mb-8">
           <div className="text-xs font-sans uppercase font-bold tracking-[0.038em] text-[#121212]">
-            МЕЖДУНАРОДНЫЙ ИНСТИТУТ ТВОРЧЕСКИХ КОНКУРСОВ
+            {locale === 'ru'
+              ? 'МЕЖДУНАРОДНЫЙ ИНСТИТУТ ТВОРЧЕСКИХ КОНКУРСОВ'
+              : 'INTERNATIONAL INSTITUTE OF COMPETITIVE ARTS'}
           </div>
           <div className="text-3xl sm:text-5xl font-serif tracking-tight text-[#000000]">
             espressivo ART
@@ -72,7 +85,7 @@ export default function CertificatesPage() {
         {/* Certificate Title */}
         <div className="text-center my-8 py-4 border-y border-[#000000]/20">
           <div className="text-xs font-sans uppercase font-bold tracking-[0.05em] text-[#121212] mb-1">
-            ОФИЦИАЛЬНЫЙ ДИПЛОМ
+            {locale === 'ru' ? 'ОФИЦИАЛЬНЫЙ ДИПЛОМ' : 'OFFICIAL DIPLOMA'}
           </div>
           <div className="text-3xl sm:text-4xl font-serif text-[#000000] font-normal">
             {certificateData.awardDegree}
@@ -82,35 +95,39 @@ export default function CertificatesPage() {
         {/* Recipient */}
         <div className="text-center space-y-3 mb-10">
           <div className="text-xs font-sans uppercase tracking-wider text-[#757580]">
-            НАГРАЖДАЕТСЯ
+            {locale === 'ru' ? 'НАГРАЖДАЕТСЯ' : 'CONFERRED UPON'}
           </div>
           <div className="text-2xl sm:text-3xl font-serif font-bold text-[#000000]">
-            {certificateData.participantName}
+            {locale === 'ru' ? certificateData.participantNameRu : certificateData.participantNameEn}
           </div>
           <div className="text-sm sm:text-base font-serif text-[#121212]">
-            {certificateData.nominationTitle}
+            {locale === 'ru' ? certificateData.nominationTitleRu : certificateData.nominationTitleEn}
           </div>
           <div className="text-xs font-serif text-[#757580]">
-            Преподаватель: {certificateData.teacherName}
+            {locale === 'ru' ? 'Преподаватель: ' : 'Instructor: '}
+            {locale === 'ru' ? certificateData.teacherNameRu : certificateData.teacherNameEn}
           </div>
         </div>
 
         {/* Bottom Colophon Row */}
         <div className="flex flex-col sm:flex-row justify-between items-end gap-6 pt-8 border-t border-[#000000]/20 text-xs">
           <div>
-            <div className="font-mono text-[10px] text-[#757580]">СЕРИЯ И НОМЕР БЛАНКА:</div>
+            <div className="font-mono text-[10px] text-[#757580]">
+              {locale === 'ru' ? 'СЕРИЯ И НОМЕР БЛАНКА:' : 'REGISTRATION NUMBER:'}
+            </div>
             <div className="font-mono font-bold text-sm text-[#000000]">
               {certificateData.number}
             </div>
             <div className="text-[10px] text-[#757580] mt-0.5">
-              Дата выдачи: {certificateData.issueDate}
+              {locale === 'ru' ? 'Дата выдачи: ' : 'Issue Date: '}
+              {certificateData.issueDate}
             </div>
           </div>
 
           <div className="text-center">
             <div className="font-serif italic text-sm text-[#000000]">Walter Kaufmann</div>
             <div className="text-[10px] uppercase font-sans tracking-wider text-[#757580] border-t border-[#000000] pt-1 mt-1">
-              {certificateData.presidentJury}
+              {locale === 'ru' ? certificateData.presidentJuryRu : certificateData.presidentJuryEn}
             </div>
           </div>
 
